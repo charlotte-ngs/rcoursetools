@@ -1,0 +1,333 @@
+---
+title: "R Tools For Course Management"
+author: "Peter von Rohr"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{R Tools For Course Management}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r Prereq, echo=FALSE, results="hide"}
+if (!require(devtools)) install.packages("devtools")
+if (!require(stringi)) install.packages("stringi")
+if (!require(knitr)) install.packages("knitr")
+if (!require(slidify)) devtools::install_git(c("ramnathv/slidify", "ramnathv/slidifyLibraries"))
+#sCourseToolsPackDir <- ifelse(.Platform$OS.type == "windows", 
+#                              "c:/Daten/pvr/Google Drive/Projects/RStudioProjects/RCourseTools", 
+#                             "/Users/peter/Google Drive/Projects/RStudioProjects/RCourseTools")
+```
+
+## Introduction
+Course management involves a standard set of tasks. Once a course is planned, outlined and scheduled, the following tasks must to be executed.
+
+* Deciding on course topics
+* Distributing topics across lecture dates
+* Writing course syllabus
+* Collecting material for the course
+* Writing course notes
+* Putting together course slides
+* Preparing lectures
+* Assigning homework to students
+* Collecting, grading and returning students homework
+
+Support for course management can be provided by a set of tools which fascilitate the above listed tasks.
+
+### Available Course Tools
+[SageMathCloud](http://cloud.sagemath.org) (SMC) is an open source platform which provides extensive functionality and already solves many of the above tasks. The only thing that is missing so far is convenient offline support. That means as soon as one is disconnected from the internet, it is impossible to use the tools provided by SMC. There is always the possibility to download the files that one is working on to the local machine before going offline and uploading them again when getting re-connected, but that is somewhat tedious and most users would probably wish for a more seamless workflow.  
+
+Secondly, when working with the course tools on SMC, all participants of the course such as co-teachers, TAs and students are forced to have an account on SMC. While this might be fine for most course participants, there might be some persons who refuse to create an account on SMC. Furthermore, once course participants have an account, they are required to remember their account credentials which is also not a problem for most participants, but it might be painful for the two or three students who always forget their password and have to get it reset all the time. These problems can be addressed by distributing the course material via a git repository such as Github. Combining the distribution of course material via Github together with R packages such as `devtools`, it is very convenient to clone Github repositories. Furthermore R provides a convenient packaging infrastructure which can be used to organize the complete course material.  
+
+
+## A Course Model
+When trying to come up with a model for a course, one has to distinguish between at least two views. 
+
+1. There is the content or topic oriented view. Such types of models have been developed in Michaela Pedronis [PhD dissertation](http://e-collection.library.ethz.ch/eserv/eth:1295/eth-1295-02.pdf). The main result of that dissertation is that courses can be modelled using so called `testable and reusable components` (TRUC).
+2. The second view is more focused on the representation of the different components of a course. Here the components are course notes, slides, course syllabi, course websites, etc. Those components can all easily be modelled by very generic objects such as URIs, documents or strings. 
+
+The main focus of this package is to automate and to fascilitate as much as possible the operations with the components of the representation view of a course.
+
+
+## The Plan 
+The goal is to have the same functionality as other open source online course tools such as SMC and to have a more seamless workflow and better offline support provided by the set of tools. 
+
+This goal is achieved by combining the R packaging mechanism together with the Github support provided by certain R-packages such as `devtools` and by R-Studio. More concretely, the complete course material is contained in an R package which can easily be downloaded and installed using the R package `devtools`. The main advantage of this approach of putting all course material into an R package is that apart from R, RStudio and `devtools` which are required anyway for the course, no additional software needs to be installed or no account must be created by the students.
+
+### Proposed workflow
+When starting from scratch, the first thing is to come up with an initial skeleton for a course. This can be done by a call to the function `create_course()`. The only mandatory argument that has to be specified when calling `create_course()` is the name of the course that we want to create. The course skeleton that is created by `create_course()` consists of a number of subdirectories and files all grouped in a directory that has the same name as the course. When not specifying any directory argument to `create_course` then the current working directory will be used as parent directory for the course. 
+
+### A first attempt
+The following code section shows a first version of a function that creates a course skeleton using `devtools::create()` to come up with an initial course package
+
+```{r CreateCourseFirstVersion}
+#' Create a course with a given name under a given working directory
+#'
+#' \code{create_course} uses devtools::create to create a package skeleton
+#'
+#' @param psCourseName      name of the course
+#' @param psCourseWorkDir   course working directory
+#' @example create_course("MyCourse")
+#' @export
+create_course <- function(psCourseName, psCourseWorkDir = getwd()) {
+  ##
+  ##   create_course(psCourseName, psCourseWorkdir): creates the 
+  ##      skeleton of a course in the form of an R package
+  ## ########################################################### ##
+  ## # check that at least course name argument is specified
+  stopifnot(!is.null(psCourseName))
+  ## # if the parent directory of the course directory does not exist, create it
+  if (! dir.exists(psCourseWorkDir)) dir.create(psCourseWorkDir)
+  ## # create an R package using devtools::create
+  sCoursePath <- file.path(psCourseWorkDir,psCourseName)
+  ## # in case old versions exist, remove them
+  if (dir.exists(sCoursePath)) unlink(sCoursePath, recursive = TRUE, force = TRUE)
+  ## # use devtools to create the package
+  devtools::create(path = sCoursePath)
+  cat("\n * Created course: ", psCourseName, " in directory: ", psCourseWorkDir, "\n")
+  invisible()
+}
+```
+
+Now that we have created a first version of a function that creates a course skeleton, we are ready to test it. Before the call to `create_course`, we are assigning the course name, the course working directory and the course description to variables. 
+
+
+```{r}
+sCourseName <- "rintrocourse"
+sCourseWorkDir <- ifelse(.Platform$OS.type == "windows", 
+                         "c:/Daten/pvr/Projects/RStudioProjects/Courses", 
+                         "/Users/peter/Data/Projects/RStudioProjects/Courses")
+sCoursePath <- file.path(sCourseWorkDir, sCourseName)
+create_course(psCourseName = sCourseName, psCourseWorkDir = sCourseWorkDir)
+```
+
+
+### A first refinement
+The initial version of the function `create_course` as shown above creates a R package for the course. The DESCRIPTION file contains default values that are determined by the devtools specific options stored in the list obtained by `options()`. 
+
+In a first refinement we want to give the user the possibility to specify the information that goes into the DESCRIPTION file more precisely. So let us have a look at the content of the DESCRIPTION file. There is a special function to read the content of DESCRIPTION files called `read.dcf()` where `dcf` stands for Debian Control File. 
+
+```{r}
+mDescContent <- read.dcf(file = file.path(sCoursePath, "DESCRIPTION"))
+print(mDescContent)
+```
+
+The easiest way to specify more information that should go into the description file is to set the devtools specific options, such as shown below.
+
+```{r, eval=FALSE}
+## save away old values of options
+opar <- options()
+## specify new options for devtools
+options(devtools.desc.author =  person(given = "Peter", family = "von Rohr", 
+                                      email = "peter.vonrohr@gmail.com",
+                                      role = c("aut", "cre")), 
+        devtools.desc.license = "LGPL-3",
+        devtools.name         = "Peter von Rohr",
+        devtools.desc         = list(Title       = "Introduction To R", 
+                                     Description = "Introductory course to the programming language R"))
+## run course creation again
+create_course(psCourseName = sCourseName, psCourseWorkDir = sCourseWorkDir)
+## restore old options
+options(opar)
+```
+
+Again looking at the description file of the created course package, we can see that the specified information is included now. 
+
+```{r}
+mDescContent <- read.dcf(file = file.path(sCoursePath, "DESCRIPTION"))
+print(mDescContent)
+```
+
+In principle the above shown solution is fine. The problem is that the dependency between the `RCourseTools` package and 
+the `devtools` package is opened to the user. That means, users of the `RCourseTools` package must know about internals 
+of the `devtools` package. This is an additional burden that we do not want to impose on the users of the `RCourseTools` 
+package. 
+
+
+### Improved functionality for specifying a DESCRIPTION file
+One possibility of specifying information to be written to a DESCRIPTION file is to define a Reference Class (RC) which 
+contains the information that we want to be written to the DESCRIPTION file. For more information on reference classes 
+and for examples on how to use them, please read the blog post on [Experiments with S4 and Reference Classes](http://charlotte-ngs.github.io/RExperimentsWithS4RC/ExperimentsWithS4AndRef.html). 
+
+### Reference class for information in DESCRIPTION file
+When looking at a description file, we recognize that the all fields ot the description file, except the author field 
+can be modelled with basic data types. For the author field we are using a separate small reference class which looks 
+as follows. 
+
+```{r AuthorRefClass}
+#' Reference class to represent an author in a description file
+#'
+#' @fields   givenName      authors given name
+#' @fields   familyName     authors family name
+#' @fields   emailAddress   authors email address
+#' @fields   role           authors role
+DcfAuthor <- setRefClass(Class = "DcfAuthor", 
+                         fields = list(
+                           givenName = "character",
+                           familyName = "character",
+                           emailAddress = "character",
+                           role = "character"
+                         ),
+                         methods = list(
+                           setGivenName = function(psGivenName){
+                             "setter for givenName"
+                             givenName <<- psGivenName
+                           },
+                           getGivenName = function(){
+                             "getter for givenName"
+                             return(givenName)
+                           },
+                           setFamilyName = function(psFamilyName){
+                             "setter for familyName"
+                             familyName <<- psFamilyName
+                           },
+                           getFamilyName = function(){
+                             "getter for familyName"
+                             return(familyName)
+                           },
+                           setEmailAddress = function(psEmailAddress){
+                             "setter for emailAddress"
+                             emailAddress <<- psEmailAddress
+                           },
+                           getEmailAddress = function(){
+                             "getter for emailAddress"
+                             return(emailAddress)
+                           },
+                           setRole = function(psRole){
+                             "setter for role"
+                             role <<- psRole
+                           },
+                           getRole = function(){
+                             "getter for role"
+                             return(role)
+                           },
+                           addRole = function(psRole){
+                             "adding a role to current list of roles"
+                             role <<- c(role, psRole)
+                           },
+                           toDcfString = function(){
+                             "writing author information to dcf-formatted string"
+                             return(paste("\"", givenName, " ", familyName, 
+                                          " <", emailAddress, "> [",
+                                          stringi::stri_flatten(role, collapse = ", "),
+                                          "]\"", sep = "", collapse = ""))
+                           }
+                         ))
+```
+
+The main reference class for the description file uses the above defined reference class for the author as one component. 
+
+```{r RCDescription}
+#' Reference class representing R package description objects
+#'
+#' @fields title                  dcf field title
+#' @fields version                dcf field version
+#' @fields author                 dcf field author
+#' @fields description            dcf field description
+#' @fields depends                dcf field depends
+#' @fields licence                dcf field licence
+#' @fields LazyData               dcf field LazyData
+#' @fields sDcfFileName           output file name
+#' @fields mExistingDescription   container for an existing dcf object
+RCDesc <- setRefClass(Class = "RCDesc", 
+                      fields = list(
+                        title = "character",
+                        version = "character",
+                        author = "DcfAuthor",
+                        description = "character",
+                        depends = "character",
+                        licence = "character",
+                        LazyData = "character",
+                        sDcfFileName = "character",
+                        mExistingDescription = "matrix"
+                      ),
+                      methods = list(
+                         # setters
+                         setTitle = function(pstitle){ title <<- pstitle },
+                         setVersion = function(psversion){ version <<- psversion },
+                         setAuthor = function(poauthor){ author <<- poauthor },
+                         setDescription = function(psdescription){ description <<- psdescription },
+                         setDepends = function(psdepends){ depends <<- psdepends },
+                         setLicence = function(pslicence){ licence <<- pslicence },
+                         setLazyData = function(psLazyData){ LazyData <<- psLazyData },
+                         setSDcfFileName = function(pssDcfFileName){ sDcfFileName <<- pssDcfFileName },
+                         # getters
+                         getTitle = function() { return(title) },
+                         getVersion = function() { return(version) },
+                         getAuthor = function() { return(author) },
+                         getDescription = function() { return(description) },
+                         getDepends = function() { return(depends) },
+                         getLicence = function() { return(licence) },
+                         getLazyData = function() { return(LazyData) },
+                         getSDcfFileName = function() { return(sDcfFileName) },
+                         # convenience methods for author
+                         setGivenName = function(psgivenName){ author$setGivenName(psgivenName) },
+                         setFamilyName = function(psfamilyName){ author$setFamilyName(psfamilyName) },
+                         setEmailAddress = function(psemailAddress){ author$setEmailAddress(psemailAddress) },
+                         setRole = function(psrole){ author$setRole(psrole) },
+                         getGivenName = function() { return(author$getGivenName()) },
+                         getFamilyName = function() { return(author$getFamilyName()) },
+                         getEmailAddress = function() { return(author$getEmailAddress()) },
+                         getRole = function() { return(author$getRole()) },
+                         # show info
+                         show = function() {
+                           cat(" * Title:       ", title, "\n",
+                               " * Version:     ", version, "\n",
+                               " * Author:      ", author$toDcfString(), "\n",
+                               " * Description: ", description, "\n",
+                               " * Depends:     ", depends, "\n",
+                               " * Licence:     ", licence, "\n",
+                               " * LazyData:    ", LazyData, "\n",
+                               " * DcfFile:     ", sDcfFileName, "\n"
+                               )
+                         },
+                         # reading an existing description file
+                         readDcf = function() {
+                           # check whether file exists
+                           if(file.exists(sDcfFileName)) {
+                             mExistingDescription <<- read.dcf(file = sDcfFileName)  
+                           } else {
+                             cat(" * WARNING: Dcf file: ", sDcfFileName, " NOT FOUND\n")
+                           }
+                           
+                         },
+                         # writing the info
+                         writeDcf = function() {
+                             write.dcf(mExistingDescription, file = sDcfFileName)
+                         },
+                         # add info to existing dcf
+                         addToDcf = function() {
+                           if(!is.null(title))         mExistingDescription[1,"Title"] <<- title
+                           if(length(version) > 0)     mExistingDescription[1,"Version"] <<- version
+                           if(length(author) > 0)      mExistingDescription[1,"Authors@R"] <<- author$toDcfString()
+                           if(length(description) > 0) mExistingDescription[1,"Description"] <<- description
+                           if(length(depends) > 0)     mExistingDescription[1,"Depends"] <<- depends
+                           if(length(licence) > 0)     mExistingDescription[1,"License"] <<- licence
+                           if(length(LazyData) > 0)    mExistingDescription[1,"LazyData"] <<- LazyData
+                         }
+                      ))
+
+```
+
+We want to specify the same information with the reference class, as with the `devtools` options above. 
+
+```{r RCDescOption}
+rCourseDesc <- RCDesc$new()
+rCourseDesc$setAuthor(DcfAuthor$new())
+rCourseDesc$setGivenName("Peter")
+rCourseDesc$setFamilyName("von Rohr")
+rCourseDesc$setEmailAddress("peter.vonrohr@gmail.com")
+rCourseDesc$setRole(c("aut","cre"))
+rCourseDesc$setLicence("LGPL-3")
+rCourseDesc$setTitle("An Introduction To R")
+rCourseDesc$setDescription("Introductory course to the programming language R")
+rCourseDesc$setSDcfFileName(pssDcfFileName = file.path(sCoursePath, "DESCRIPTION"))
+rCourseDesc$show()
+rCourseDesc$readDcf()
+rCourseDesc$addToDcf()
+rCourseDesc$writeDcf()
+mDescContent <- read.dcf(file = file.path(sCoursePath, "DESCRIPTION"))
+print(mDescContent)
+```
+
+The improved functionality of specifying information in the description file is now combined with the creating function.
