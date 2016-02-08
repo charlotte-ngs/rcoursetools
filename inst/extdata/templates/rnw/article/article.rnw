@@ -1,0 +1,12 @@
+\documentclass{article}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{[REPLACE_WITH_TITLE]}
+\author{[REPLACE_WITH_AUTHOR]}
+\maketitle
+
+
+
+\end{document}

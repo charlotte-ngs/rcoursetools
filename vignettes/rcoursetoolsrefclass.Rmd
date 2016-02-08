@@ -1,0 +1,196 @@
+---
+title: "Reference Classes For R Course Tool"
+author: "Peter von Rohr"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Reference classes (RC) in R provide a Java/C++-like OOP functionality. The basic difference to S3/S4 type of classes in R are that in RC methods are associated to classes and not to functions. Hence anyone who is familiar with designing classes in Java or C++ can directly apply this knowledge to the design of RC in R.
+
+The package `rcoursetools` has a collection of tools that should be useful for teachers for their preparation of course material. Course material here stands for lecture notes, slides, exercises, etc.
+
+## A course model
+When we try to design tools for supporting teachers, it helps to think about a model or an abstract representation of a course. For the tools developed in this package, we assume that a course consists of lectures, excercises, homeworks and exams. Hence, in our model, a course can be represented by a collection of different documents. The documents can be grouped into different categories or different classes. This already points at an implementation based on reference classes
+
+## Class design
+The next step is now to convert the building blocks of our course model into software components. The single components are implemented as reference classes. Starting from top down in our course model, the first building block to be converted into a software component is the course itself. The reference class representing a course is called `CourseRefClass` and has some basic fields like the course name or the course number. Then it has other fields that are reference classes by themselves like slides, exercises or homeworks. Also instructors are represented by reference classes.  
+
+### Instructor reference class
+We are starting our class design with the reference class for instructors. This is a simple reference class with only a few fields and only a couple of methods such as shown below. 
+
+```{r InstructorRefClass}
+InstructorRefClass <- setRefClass(Class = "InstructorRefClass", 
+                                  fields = list(sFirstName = "character",
+                                                sLastName = "character",
+                                                sEmailAddress = "character"), 
+                                  methods = list(
+                                    setFirstName = function(psFirstName){sFirstName <<- psFirstName},
+                                    getFirstName = function(){return(sFirstName)},
+                                    setLastName = function(psLastName){sLastName <<- psLastName},
+                                    getLastName = function(){return(sLastName)},
+                                    setEmailAddress = function(psEmailAddress){sEmailAddress <<- psEmailAddress},
+                                    getEmailAddress = function(){return(sEmailAddress)},
+                                    show = function(){
+                                      cat(" * Last name:     ", sLastName, "\n")
+                                      cat(" * First name:    ", sFirstName, "\n")
+                                      cat(" * Email address: ", sEmailAddress, "\n")},
+                                    toString = function(){
+                                      return(paste(sFirstName, sLastName, 
+                                                   paste0("<",sEmailAddress,">")))}))
+# test
+aInstrRefObj <- InstructorRefClass$new()
+aInstrRefObj$setFirstName("Peter")
+aInstrRefObj$setLastName("von Rohr")
+aInstrRefObj$setEmailAddress("peter.vonrohr@gmail.com")
+aInstrRefObj$show()
+cat(" * Instructor reference object as a string: ", aInstrRefObj$toString(), "\n")
+aProfRefObj <- InstructorRefClass$new()
+aProfRefObj$setFirstName("Gaston")
+aProfRefObj$setLastName("Gonnet")
+aProfRefObj$setEmailAddress("gonnet@inf.ethz.ch")
+aProfRefObj$show()
+```
+
+### Reference class representing a course
+The above shown reference class for an instructor is now used as a component in the reference class for our course. 
+
+```{r CourseRefClass}
+CourseRefClass <- setRefClass(Class   = "CourseRefClass",
+                              fields  = list(
+                                sCourseName        = "character",
+                                sCourseNumber      = "character",
+                                roCourseInstructor = "list"),
+                              methods = list(
+                                setCourseName = function(psCourseName) {sCourseName <<- psCourseName},
+                                getCourseName = function(){return(sCourseName)},
+                                setCourseNumber = function(psCourseNumber){sCourseNumber <<- psCourseNumber},
+                                getCourseNumber = function(){return(sCourseNumber)},
+                                addCourseInstructor = function(proCourseInstructor){
+                                  'Adding an instructor to the list of instructors for this course'
+                                  if (length(roCourseInstructor) == 0){
+                                    roCourseInstructor <<- list(proCourseInstructor)
+                                  } else {
+                                    roCourseInstructor <<- c(roCourseInstructor, list(proCourseInstructor))
+                                  }
+                                },
+                                getCourseInstructor = function(){return(roCourseInstructor)}
+                              ))
+
+```
+
+### Generic reference class for documents
+As already pointed out, most components in our class models are documents of a certain kind which are all different, but they are sharing some common properties. This hierarchical structure between model building blocks can be transfered to the corresponding software components by using a generic class for the common properties and by using derived classes for the properties that are specific to every document class. 
+
+Common properties can be 
+
+* __sources__: assuming that every document is created from a source file which includes some diagrams and figures, the source file plus the files which contain the diagrams and the figures are grouped together as sources
+* __title__
+* __author__
+* __date__
+* __template__: apart from the content, source files are typically built all from the same components. This common building blocks are stored in a template file.
+* __engine__: program to compile the sources into the final version of the document
+
+A first attempt at such a generic reference class might look as follows.
+
+```{r GenericDocumentRefClass, eval=FALSE}
+GenericDocumentRefClass <- setRefClass(Class = "GenericDocumentRefClass",
+                                       fields = list(
+                                         roSource   = "DocumentSourceRefClass",
+                                         sTitle     = "character",
+                                         sAuthor    = "character",
+                                         dDate      = "Date",
+                                         sEngine    = "character") ,
+                                       methods = list(
+                                         setSource  = function(proSource){roSource <<- proSource},
+                                         getSource  = function(){return(roSource)},
+                                         setTitle   = function(psTitle){sTitle <<- psTitle},
+                                         getTitle   = function(){return(sTitle)},
+                                         setAuthor  = function(psAuthor){sAuthor <<- psAuthor},
+                                         getAuthor  = function(){return(sAuthor)},
+                                         setDate    = function(pdDate){dDate <<- pdDate},
+                                         getDate    = function(){return(dDate)},
+                                         setEngine  = function(psEnginge){sEngine <<- psEnginge},
+                                         getEngine  = function(){return(sEngine)}))
+```
+
+The first field in reference class `GenericDocumentRefClass` is an other reference class which contains information about the sources of the document reference object that is represented by `GenericDocumentRefClass`. The definition of the reference class that defines the sources object is given below.
+
+```{r DocumentSourceRefClass}
+DocumentSourceRefClass <- setRefClass(Class = "DocumentSourceRefClass",
+                                      fields = list(
+                                        sSourceFile   = "character",
+                                        sSourcePath   = "character",
+                                        sSourceFormat = "character",
+                                        sEngine       = "character",
+                                        sOutFormat    = "character",
+                                        sTemplateFile = "character",
+                                        sTemplatePath = "character"),
+                                      methods = list(
+                                        setSourceFile   = function(psSourceFile){sSourceFile <<- psSourceFile},
+                                        getSourceFile   = function(){return(sSourceFile)},
+                                        setSourcePath   = function(psSourcePath){sSourcePath <<- psSourcePath},
+                                        getSourcePath   = function(){return(sSourcePath)},
+                                        setSourceFormat = function(psSourceFormat){sSourceFormat <<- psSourceFormat},
+                                        getSourceFormat = function(){return(sSourceFormat)},
+                                        setEngine       = function(psEngine){sEngine <<- psEngine},
+                                        getEngine       = function(){return(sEngine)},
+                                        setOutFormat    = function(psOutFormat){sOutFormat <<- psOutFormat},
+                                        getOutFormat    = function(){return(sOutFormat)},
+                                        setTemplateFile = function(psTemplateFile){sTemplateFile <<- psTemplateFile},
+                                        getTemplateFile = function(){return(sTemplateFile)},
+                                        setTemplatePath = function(psTemplatePath){sTemplatePath <<- psTemplatePath},
+                                        getTemplatePath = function(){return(sTemplatePath)}))
+
+```
+
+
+## Let us get started with an example
+When starting a new course, we have to create a new website for the course. In the example course that we show, the website is hosted by github pages. Therefore all we have to do is to create a markdown document and commit that into a new repository on github and the website is automatically generated by the site-generator on github. 
+
+The website is represented by a reference class called `CourseWebsiteRefClass` that is derived from the `GenericDocumentRefClass` shown above.
+
+
+```{r GenDocRefClass, echo=FALSE, results='hide'}
+GenericDocumentRefClass <- setRefClass(Class = "GenericDocumentRefClass",
+                                       fields = list(
+                                         roSource   = "DocumentSourceRefClass",
+                                         sTitle     = "character",
+                                         sAuthor    = "character",
+                                         dDate      = "Date",
+                                         sEngine    = "character") ,
+                                       methods = list(
+                                         setSource  = function(proSource){roSource <<- proSource},
+                                         getSource  = function(){return(roSource)},
+                                         setTitle   = function(psTitle){sTitle <<- psTitle},
+                                         getTitle   = function(){return(sTitle)},
+                                         setAuthor  = function(psAuthor){sAuthor <<- psAuthor},
+                                         getAuthor  = function(){return(sAuthor)},
+                                         setDate    = function(pdDate){dDate <<- pdDate},
+                                         getDate    = function(){return(dDate)},
+                                         setEngine  = function(psEnginge){sEngine <<- psEnginge},
+                                         getEngine  = function(){return(sEngine)}))
+```
+
+In order to create a concrete class for the website, all we have to do is to replace the placeholders in the template with information about the course. 
+
+```{r CourseWebSiteRefClass}
+CourseWebsiteRefClass <- setRefClass(Class = "CourseWebsiteRefClass",
+                                     fields = list(),
+                                     contains = c("GenericDocumentRefClass"),
+                                     methods = list(
+                                       createWebSite = function(psWebSiteTemplate=NULL){
+                                         if (is.null(psWebSiteTemplate)) {
+                                           vWebSiteTemplate <- readLines(file.path(roSource$sTemplatePath,roSource$sTemplateFile))
+                                         } else {
+                                           vWebSiteTemplate <- readLines(psWebSiteTemplate)
+                                         }
+                                         
+                                       }
+                                     ))
+```
+
+The replacement of placeholders in the templatefile is a task that must be done repeatedly. Hence it is worth while having a look at how to do that replacement as efficiently as possible.

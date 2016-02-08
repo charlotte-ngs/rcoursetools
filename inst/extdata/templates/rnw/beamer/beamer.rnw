@@ -1,0 +1,48 @@
+\documentclass{beamer}
+
+% configuration and option for showing notes
+\setbeamertemplate{note page}{\ \\[.3cm]
+\textbf{Notes:}\\%[0.1cm]
+{\footnotesize %\tiny
+\insertnote}}
+
+%\setbeameroption{hide notes}
+\setbeameroption{show notes}
+
+\title{Title of the talk\\
+And a much larger title spanning two lines
+}
+\newcommand{\shorttitle}{Shorter title}
+
+\author{Author's Name}
+\date{\today}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\frame{
+\maketitle
+}
+
+
+\frame{
+
+  \frametitle{This is the title of the first frame}
+
+  In this frame we use a block:
+
+  \begin{block}{Title of the block}
+  Contents of the block...\\
+  In one or more lines
+    \begin{itemize}
+    \item It can also include environments...
+     \begin{itemize}
+      \item It can also include environments...
+     \end{itemize}
+    \end{itemize}
+  \end{block}
+
+}
+
+
+\end{document}

@@ -1,0 +1,45 @@
+---
+title: "R Course Tools - Step by Step"
+author: "Peter von Rohr"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r DevTools, echo=FALSE, results='hide'}
+devtools::load_all()
+```
+
+The R-package `rcoursetools` aims at providing some useful tools for teachers to create and mangage their course material. The idea behind `rcoursetools` is to use R's package infrastructure in order to organize and to bundle all material that is required for a course.
+
+## Starting from scratch
+When starting a new course, we want to create some basic infrastructure or some sort of ecosystem where the course material can be stored. This infrastructure uses the R-package system to create a skeleton for our course material. The basic course infrastructure is created using the function 
+`create_course()` which requires two arguments
+
+1. a course directory
+2. a course name
+
+The course directory specifies the directory in the file system where the course will be created and the course name specifies how the subdirectory below which all material should be stored is called.
+
+```{r CreateCourse}
+create_course(psCourseName = "AZNASN", psCourseDir = "/Users/peter/Data/Projects/Courses")
+```
+
+## Create a website
+Nowadays, teaching material is distributed to students using a website. Hence one of the tasks when starting to prepare for a new course is to create a website. We create the website starting from a template. This template contains placeholders which are to be replaced by information which is specific to our course. 
+
+```{r CreateWebsite}
+create_course_website(psCourseName = "AZNASN", psCourseDir = "/Users/peter/Data/Projects/Courses")
+```
+
+Now that the skeleton for the website is created, we can go and get creative and fill in the content of the course into that site. This can be done using the command
+
+```{r EditWebsite, eval=FALSE}
+file.edit("/Users/peter/Data/Projects/Courses/AZNASN/vignettes/index.Rmd")
+```
+
+
+

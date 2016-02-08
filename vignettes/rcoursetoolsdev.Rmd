@@ -1,5 +1,5 @@
 ---
-title: "R Tools For Course Management"
+title: "R Tools For Course Management - Development Documentation"
 author: "Peter von Rohr"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -10,6 +10,7 @@ vignette: >
 ---
 
 ```{r Prereq, echo=FALSE, results="hide"}
+rm(list = ls())
 if (!require(devtools)) install.packages("devtools")
 if (!require(stringi)) install.packages("stringi")
 if (!require(knitr)) install.packages("knitr")
@@ -17,6 +18,7 @@ if (!require(slidify)) devtools::install_git(c("ramnathv/slidify", "ramnathv/sli
 #sCourseToolsPackDir <- ifelse(.Platform$OS.type == "windows", 
 #                              "c:/Daten/pvr/Google Drive/Projects/RStudioProjects/RCourseTools", 
 #                             "/Users/peter/Google Drive/Projects/RStudioProjects/RCourseTools")
+devtools::load_all()
 ```
 
 ## Introduction
@@ -271,6 +273,7 @@ RCDesc <- setRefClass(Class = "RCDesc",
                          getRole = function() { return(author$getRole()) },
                          # show info
                          show = function() {
+                           "Showing current conent of DCF object"
                            cat(" * Title:       ", title, "\n",
                                " * Version:     ", version, "\n",
                                " * Author:      ", author$toDcfString(), "\n",
@@ -283,23 +286,25 @@ RCDesc <- setRefClass(Class = "RCDesc",
                          },
                          # reading an existing description file
                          readDcf = function() {
+                           "Reading a description file"
                            # check whether file exists
                            if(file.exists(sDcfFileName)) {
                              mExistingDescription <<- read.dcf(file = sDcfFileName)  
                            } else {
                              cat(" * WARNING: Dcf file: ", sDcfFileName, " NOT FOUND\n")
                            }
-                           
                          },
                          # writing the info
                          writeDcf = function() {
+                           "Write DCF information to a file"
                              write.dcf(mExistingDescription, file = sDcfFileName)
                          },
                          # add info to existing dcf
                          addToDcf = function() {
+                           "Add DCF information to existing description"
                            if(!is.null(title))         mExistingDescription[1,"Title"] <<- title
                            if(length(version) > 0)     mExistingDescription[1,"Version"] <<- version
-                           if(length(author) > 0)      mExistingDescription[1,"Authors@R"] <<- author$toDcfString()
+                           if(length(author) > 0)      mExistingDescription[1,"Author"] <<- author$toDcfString()
                            if(length(description) > 0) mExistingDescription[1,"Description"] <<- description
                            if(length(depends) > 0)     mExistingDescription[1,"Depends"] <<- depends
                            if(length(licence) > 0)     mExistingDescription[1,"License"] <<- licence
@@ -313,7 +318,7 @@ We want to specify the same information with the reference class, as with the `d
 
 ```{r RCDescOption}
 rCourseDesc <- RCDesc$new()
-rCourseDesc$setAuthor(DcfAuthor$new())
+rCourseDesc$setAuthor(DcfAuthorRefClass$new())
 rCourseDesc$setGivenName("Peter")
 rCourseDesc$setFamilyName("von Rohr")
 rCourseDesc$setEmailAddress("peter.vonrohr@gmail.com")
@@ -330,4 +335,244 @@ mDescContent <- read.dcf(file = file.path(sCoursePath, "DESCRIPTION"))
 print(mDescContent)
 ```
 
-The improved functionality of specifying information in the description file is now combined with the creating function.
+The improved functionality of specifying information in the description file is now combined with the creation function.
+
+
+
+```{r CreateCourseFinal}
+#' Create a course with a given name under a given working directory
+#'
+#' \code{create_course} uses devtools::create to create a package skeleton
+#'
+#' @param psCourseName      name of the course
+#' @param psCourseWorkDir   course working directory
+#' @example create_course("MyCourse")
+create_course <- function(psCourseName, psCourseWorkDir = getwd(), poDesc = NULL) {
+  ##
+  ##   create_course(psCourseName, psCourseWorkdir): creates the 
+  ##      skeleton of a course in the form of an R package
+  ## ########################################################### ##
+  ## # check that at least course name argument is specified
+  if (is.null(psCourseName)) 
+    stop(" * ERROR in create_course: Argument psCourseName missing\n")
+  ## # if the parent directory of the course directory does not exist, create it
+  if (! dir.exists(psCourseWorkDir)) 
+    dir.create(psCourseWorkDir)
+  ## # create an R package using devtools::create
+  sCoursePath <- file.path(psCourseWorkDir,psCourseName)
+  ## # in case old versions exist, remove them
+  if (dir.exists(sCoursePath)) unlink(sCoursePath, recursive = TRUE, force = TRUE)
+  ## # use devtools to create the package
+  devtools::create(path = sCoursePath)
+  cat("\n * Created course: ", psCourseName, " in directory: ", psCourseWorkDir, "\n")
+  if (!is.null(poDesc)) {
+    poDesc$setSDcfFileName(pssDcfFileName = file.path(sCoursePath, "DESCRIPTION"))
+    poDesc$readDcf()
+    poDesc$addToDcf()
+    poDesc$writeDcf()
+  }
+  ## # copy templates directory
+  sTemplateSrcDir <- file.path(system.file(package = "rcoursetools"), "extdata", "templates")
+  sTemplateTrgDir <- file.path(sCoursePath, "inst", "extdata")
+  if (!dir.exists(sTemplateTrgDir)) dir.create(sTemplateTrgDir, recursive = TRUE)
+  cat(" * Copying templates from: ", sTemplateSrcDir, 
+      "\n                     to: ", sTemplateTrgDir, "\n")
+  file.copy(from = sTemplateSrcDir, to = sTemplateTrgDir, recursive = TRUE, copy.mode = TRUE)
+  invisible()
+}
+```
+
+A course package can now be created with the new function which accepts as additional argument an instance of type `RCDesc`. 
+
+```{r CourseCreateFinal}
+create_course(psCourseName = sCourseName, psCourseWorkDir = sCourseWorkDir, poDesc = rCourseDesc)
+mDescContent <- read.dcf(file = file.path(sCoursePath, "DESCRIPTION"))
+print(mDescContent)
+```
+
+From the content of the description object printed above, we can see that the information specified in the `RCDesc` reference object is included in the descirption file.
+
+
+## More Functionality
+Once the course skeleton is created, it has to be filled with content. In a first step, we want to provide some tools to create a set of slides to be used in the course.
+
+### Creating Slides
+Tools like [`knitr`](http://yihui.name/knitr/) and [`slidify`](http://slidify.org/) help us creating slides that can be used for our course. Package `knitr` is used to compile rnoweb files into pdf documents where `slidify` converts rmarkdown files to html5 pages. 
+
+The function `create_slides()` is a wrapper to both tools `knitr` and `slidify`. 
+
+```{r CreateSlides}
+#' Create Slides For A Given Course
+#'
+#' \code{create_slides} creates slides for a given course using a specific slide engine
+#'
+#' This is a wrapper function that checks whether the required directories exist and 
+#' that calls the slide-engine specific functions
+#'
+#' @param psSlidesName      name of the slides document
+#' @param psCourseName      name of the course
+#' @param psCourseWorkDir   working directory for course (default getwd())
+#' @param psSlideEngine     slide engine, either slidify or knitr
+#' @examples
+#' create_slides(psCourseName = "rintrocourse", psCourseWorkDir = getwd(), psSlideEngine = "slidify")
+create_slides <- function(psSlidesName, psCourseName, psCourseWorkDir, psSlideEngine,
+                          psSlidesClass = NULL,
+                          plReplace     = NULL){
+  ### # check that course work directory exists
+  if (! dir.exists(psCourseWorkDir)) dir.create(psCourseWorkDir)
+  ### # call slide-engine specific functions
+  if (psSlideEngine == "slidify") {
+    create_slides_slidify(psSlidesName = psSlidesName, 
+                          psCourseName = psCourseName, 
+                          psCourseWorkDir = psCourseWorkDir)
+  } else if (psSlideEngine == "knitr") {
+    create_slides_knitr(psSlidesName    = psSlidesName, 
+                        psCourseName    = psCourseName, 
+                        psCourseWorkDir = psCourseWorkDir, 
+                        psSlidesClass   = psSlidesClass,
+                        plReplace       = plReplace)
+  } else {
+    cat(" *** ERROR in create_slides: slide engine: ", psSlideEngine, " not implemented\n")
+  }
+}
+```
+
+The functions for the specific engines have to be implemented first, before we can create our first set of slides.
+
+```{r CreateSlidesSlidify}
+#' Create Slides Using Slidify
+#'
+#' \code{create_slides_slidify} creates a slide document for a given course using slidify
+#'
+#' @param psSlidesName      name of the slides document
+#' @param psCourseName      name of the course
+#' @param psCourseWorkDir   working directory for course (default getwd())
+create_slides_slidify <- function(psSlidesName, psCourseName, psCourseWorkDir = getwd()){
+  ### # put together path for slides
+  sSlidesPath <- file.path(psCourseWorkDir, psCourseName, "vignettes", psSlidesName)
+  ### # use slidify::author to come up with a skeleton document
+  slidify::author(deckdir = sSlidesPath, open_rmd = FALSE)
+}
+```
+
+The same function for slide-engine `knitr` looks as follows
+
+```{r CreateSlidesKnitr}
+#' Create a set of slides using knitr as conversion engine
+#'
+#' The target path where the created set of slides is created
+#' is determined by the course work directory, the name of the course
+#' and the file name which should be given to the slides. 
+#' Based on the slide class name, a set of template files is 
+#' chosen wich is copied into the slides path. In the last step
+#' the place-holders in the template are replaced by specific 
+#' information that is specified. 
+create_slides_knitr <- function(psSlidesName, 
+                                psCourseName, 
+                                psCourseWorkDir, 
+                                psSlidesClass = "beamer", 
+                                psTemplateDir = file.path(psCourseWorkDir, psCourseName, "inst/extdata/templates"),
+                                plReplace     = NULL){
+  ### # put together path for slides
+  sSlidesPath <- file.path(psCourseWorkDir, psCourseName, "vignettes")
+  if (!dir.exists(sSlidesPath)) dir.create(sSlidesPath, recursive = TRUE)
+  ### # copy tex files from template directory based on slide class
+  copy_template_files(psSlidesPath  = sSlidesPath,
+                      psSlidesClass = psSlidesClass,
+                      psTemplateDir = psTemplateDir)
+  ### # in case a replacement list != null is specified, we do
+  ### #  replacement and renaming in on function, otherwise, 
+  ### #  we just rename the template
+  if (!is.null(plReplace)) {
+    ### # replace placeholders with sepcific information
+      replace_place_holders(psSlidesName  = psSlidesName, 
+                            psSlidesPath  = sSlidesPath,
+                            psSlidesClass = psSlidesClass,
+                            plReplace     = plReplace)    
+  } else {
+    ### # no replacement list specified, just
+    ### #  rename template source files in copied slide-path
+    rename_template_files(psSlidesName  = psSlidesName,
+                          psSlidesPath  = sSlidesPath,
+                          psSlidesClass = psSlidesClass)
+    
+  }
+  cat(" * Set of knitr slides created under: ", sSlidesPath, "\n",
+      " * Slides can be modified by opening project: ", psCourseName, " and running \n",
+      "   > file.edit(\"vignettes/", paste(psSlidesName, ".rnw", sep = ""), 
+      "\")\n", sep = "")
+
+  invisible()
+}
+
+#' Copy template source and class files based on psSlidesClass to slides directory
+#'
+#' @param psSlidesPath    target path of slides source file 
+#' @param psSlidesClass   latex class of slides
+#' @param psTemplateDir   template directory where templates of sources are stored
+copy_template_files <- function(psSlidesPath, psSlidesClass, psTemplateDir) {
+  sTemplatePath <- file.path(psTemplateDir, psSlidesClass)
+  sTemplateFiles <- list.files(path = sTemplatePath)
+  for (f in sTemplateFiles) {
+    file.copy(from = file.path(sTemplatePath, f ), to = psSlidesPath, recursive = TRUE, copy.mode = TRUE)
+  }
+    
+}
+
+
+#' Renames the tex/rnw source template files to match the specified file name for the slides
+#'
+#' @param psSlidesName    the final file name of the slides
+#' @param psSlidesPath    path to the slides target directory
+#' @param psSlidesClass   name of the utilsed latex document class
+rename_template_files <- function(psSlidesName, psSlidesPath, psSlidesClass) {
+  file.rename(from = file.path(psSlidesPath, paste(psSlidesClass, ".rnw", sep = "")), 
+              to   = file.path(psSlidesPath, paste(psSlidesName, ".rnw", sep = "")))
+}
+
+#' Replace placeholders with sepcific information given in replacement list
+#'
+#' Template source files contain placeholders of the format [REPLACE_WITH_<TAG>] where 
+#' tag is a unique identifier that is used as name in the replacement list. The 
+#' replacement list has the tags as names and as values the string that should  
+#' replace the placeholder. In a loop over the replacement list entries, the 
+#' placeholders are constructed from the tags which are the names in the replacement 
+#' list and the placeholders are replaced by the values in the replacement list.
+#'
+#' @param psSlidesName    Name of the slides document
+#' @param psSlidesPath    Path to where the slides are stored
+#' @param psSlidesClass   Name of the latex document class used for the slides
+#' @param plReplace       replacement list that maps placeholders to values in the final slides document
+replace_place_holders <- function(psSlidesName, psSlidesPath, psSlidesClass, plReplace) {
+  ### # read slides source file into character vector
+  sSlideSourceFile <- file.path(psSlidesPath, paste(psSlidesClass, ".rnw", sep = ""))
+  conSlideSource <- file(description = sSlideSourceFile)
+  sSlidesSource <- readLines(con = conSlideSource)
+  close(con = conSlideSource)
+  ### # original template file is not needed anymore
+  file.remove(sSlideSourceFile)
+  
+  ### # loop over entries in replacement list and do the substitution
+  for (sCurReplName in names(plReplace)) {
+    sCurPat <- paste("[REPLACE_WITH_", sCurReplName, "]", sep = "", collapse = "")
+    sSlidesSource <- gsub(sCurPat, plReplace[[sCurReplName]], sSlidesSource, fixed = TRUE)
+  }
+  
+  ### # output file
+  sOutFile <- file.path(psSlidesPath, paste(psSlidesName, ".rnw", sep = ""))
+  cat(sSlidesSource, file = sOutFile, sep = "\n")
+  cat(" * Placeholders replaced\n")
+  invisible()
+}
+
+```
+
+Now we are ready to create our first set of slides. 
+
+```{r IntroSlidesSlidify, eval = FALSE}
+create_slides(psSlidesName = "IntroductionToR", 
+              psCourseName = sCourseName, 
+              psCourseWorkDir = sCourseWorkDir, 
+              psSlideEngine = "slidify")
+```
+
