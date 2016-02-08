@@ -163,7 +163,7 @@ as follows.
 #' @fields   familyName     authors family name
 #' @fields   emailAddress   authors email address
 #' @fields   role           authors role
-DcfAuthor <- setRefClass(Class = "DcfAuthor", 
+DcfAuthorRefClass <- setRefClass(Class = "DcfAuthorRefClass", 
                          fields = list(
                            givenName = "character",
                            familyName = "character",
@@ -235,7 +235,7 @@ RCDesc <- setRefClass(Class = "RCDesc",
                       fields = list(
                         title = "character",
                         version = "character",
-                        author = "DcfAuthor",
+                        author = "DcfAuthorRefClass",
                         description = "character",
                         depends = "character",
                         licence = "character",
@@ -316,7 +316,7 @@ RCDesc <- setRefClass(Class = "RCDesc",
 
 We want to specify the same information with the reference class, as with the `devtools` options above. 
 
-```{r RCDescOption}
+```{r RCDescOption, eval=FALSE}
 rCourseDesc <- RCDesc$new()
 rCourseDesc$setAuthor(DcfAuthorRefClass$new())
 rCourseDesc$setGivenName("Peter")
@@ -339,7 +339,7 @@ The improved functionality of specifying information in the description file is 
 
 
 
-```{r CreateCourseFinal}
+```{r CreateCourseFinal, eval=FALSE}
 #' Create a course with a given name under a given working directory
 #'
 #' \code{create_course} uses devtools::create to create a package skeleton
@@ -384,7 +384,7 @@ create_course <- function(psCourseName, psCourseWorkDir = getwd(), poDesc = NULL
 
 A course package can now be created with the new function which accepts as additional argument an instance of type `RCDesc`. 
 
-```{r CourseCreateFinal}
+```{r CourseCreateFinal, eval=FALSE}
 create_course(psCourseName = sCourseName, psCourseWorkDir = sCourseWorkDir, poDesc = rCourseDesc)
 mDescContent <- read.dcf(file = file.path(sCoursePath, "DESCRIPTION"))
 print(mDescContent)
@@ -401,7 +401,7 @@ Tools like [`knitr`](http://yihui.name/knitr/) and [`slidify`](http://slidify.or
 
 The function `create_slides()` is a wrapper to both tools `knitr` and `slidify`. 
 
-```{r CreateSlides}
+```{r CreateSlides, eval=FALSE}
 #' Create Slides For A Given Course
 #'
 #' \code{create_slides} creates slides for a given course using a specific slide engine
@@ -439,7 +439,7 @@ create_slides <- function(psSlidesName, psCourseName, psCourseWorkDir, psSlideEn
 
 The functions for the specific engines have to be implemented first, before we can create our first set of slides.
 
-```{r CreateSlidesSlidify}
+```{r CreateSlidesSlidify, eval=FALSE}
 #' Create Slides Using Slidify
 #'
 #' \code{create_slides_slidify} creates a slide document for a given course using slidify
@@ -457,7 +457,7 @@ create_slides_slidify <- function(psSlidesName, psCourseName, psCourseWorkDir = 
 
 The same function for slide-engine `knitr` looks as follows
 
-```{r CreateSlidesKnitr}
+```{r CreateSlidesKnitr, eval=FALSE}
 #' Create a set of slides using knitr as conversion engine
 #'
 #' The target path where the created set of slides is created
