@@ -12,10 +12,16 @@
 #' infrastructure for a course
 #' @param pscoursename   name of the course
 #' @param pscoursedir    root directory where course is created
-create_course <- function(psCourseName, psCourseDir = "."){
+#' @param pbOverWrite    in case resulting course package directory, exists, delete it
+create_course <- function(psCourseName, psCourseDir = ".", pbOverWrite = FALSE){
+  ### # if pbOverWrite is specified, then delete any existing course directories
+  ### #  be careful with this
+  sCoursePackDir <- file.path(psCourseDir, psCourseName)
+  if (dir.exists(sCoursePackDir) && pbOverWrite)
+    unlink(sCoursePackDir, recursive = TRUE)
   ### # in case pscoursedir does not exist, create it
   if(!dir.exists(psCourseDir))
     dir.create(psCourseDir, recursive = TRUE)
   ### # use devtools to create a package
-  devtools::create(path = file.path(psCourseDir, psCourseName))
+  devtools::create(path = sCoursePackDir)
 }

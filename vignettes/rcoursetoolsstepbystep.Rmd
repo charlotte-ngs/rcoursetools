@@ -9,7 +9,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r DevTools, echo=FALSE, results='hide'}
+
+```{r DevTools, eval=FALSE, echo=FALSE, results='hide'}
 devtools::load_all()
 ```
 
@@ -24,14 +25,14 @@ When starting a new course, we want to create some basic infrastructure or some 
 
 The course directory specifies the directory in the file system where the course will be created and the course name specifies how the subdirectory below which all material should be stored is called.
 
-```{r CreateCourse}
-create_course(psCourseName = "AZNASN", psCourseDir = "/Users/peter/Data/Projects/Courses")
+```{r CreateCourse, eval=FALSE}
+create_course(psCourseName = "AZNASN", psCourseDir = "/Users/peter/Data/Projects/Courses", pbOverWrite = TRUE)
 ```
 
 ## Create a website
 Nowadays, teaching material is distributed to students using a website. Hence one of the tasks when starting to prepare for a new course is to create a website. We create the website starting from a template. This template contains placeholders which are to be replaced by information which is specific to our course. 
 
-```{r CreateWebsite}
+```{r CreateWebsite, eval=FALSE}
 create_course_website(psCourseName = "AZNASN", psCourseDir = "/Users/peter/Data/Projects/Courses")
 ```
 

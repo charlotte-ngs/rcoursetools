@@ -4,12 +4,17 @@
 \alias{deploy_website}
 \title{Deploy a website from a source branch to a publication branch}
 \usage{
-deploy_website(psFrom = "vignettes/index.Rmd", psToDir = NULL)
+deploy_website(psFrom = "vignettes/index.Rmd", psToDir = NULL,
+  pbKnitrKnit = FALSE, pbOverWrite = TRUE)
 }
 \arguments{
 \item{psFrom}{source file which is to be deployed, the source directory must exist, o/w, the function stops with an error}
 
 \item{psToDir}{directory where the file should be deployed to, if it does not exist, the directory will be created}
+
+\item{pbKnitrKnit}{should the original file be converted from Rmd to md, default = FALSE}
+
+\item{pbOverWrite}{should existing result files be overwritten, default = TRUE, this also influences option recursive of file.copy}
 }
 \description{
 \code{deploy_website} deploys a website that was created in some
@@ -19,5 +24,12 @@ the fact that github project pages are published from the gh-pages
 branch and not from the master branch. But still we would like to
 develop the website on the master branch which gives us the possibility
 to test everyting without the need for immediate publication.
+}
+\details{
+The flag \code{pbKnitrKnit} indicates whether the original document should
+be converted from Rmd to md format. NB github pages only allow .md documents
+for publication. The flag \code{pbOverWrite} specifies whether any existing
+result files should be overwritten or not. The same value is used for option
+\code{recursive} of the used function \code{file.copy}.
 }
 
