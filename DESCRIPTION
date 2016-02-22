@@ -7,5 +7,8 @@ Author: "Peter von Rohr <peter.vonrohr@gmail.com> [aut, cre]"
 Description: Collection of tools related to teaching courses
 License: LGPL-3
 LazyData: TRUE
-Suggests: knitr, rmarkdown
+Suggests:
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1

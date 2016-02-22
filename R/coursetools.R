@@ -13,6 +13,7 @@
 #' @param pscoursename   name of the course
 #' @param pscoursedir    root directory where course is created
 #' @param pbOverWrite    in case resulting course package directory, exists, delete it
+#' @export create_course
 create_course <- function(psCourseName, psCourseDir = ".", pbOverWrite = FALSE){
   ### # if pbOverWrite is specified, then delete any existing course directories
   ### #  be careful with this
@@ -24,4 +25,6 @@ create_course <- function(psCourseName, psCourseDir = ".", pbOverWrite = FALSE){
     dir.create(psCourseDir, recursive = TRUE)
   ### # use devtools to create a package
   devtools::create(path = sCoursePackDir)
+  ### # return invisible
+  invisible(TRUE)
 }
