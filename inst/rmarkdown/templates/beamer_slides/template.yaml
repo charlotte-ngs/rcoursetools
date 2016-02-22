@@ -1,0 +1,5 @@
+name: Beamer Slides (PDF)
+description: >
+  Template for creating beamer slides for courses
+  or other types of presentations.
+create_dir: false
