@@ -16,4 +16,9 @@ This is a wrapper function to \code{rmarkdown::draft} that
 creates a source document for a deck of beamer slides. The
 template is taken from this packages template directory
 }
+\details{
+The setup here is done analogeously to \code{devtools::use_vignette},
+except that here, we are using different templates and we want to
+create pdf_ouput and not html_vignette.
+}
 
