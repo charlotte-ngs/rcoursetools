@@ -55,7 +55,17 @@ create_slides <- function(psSlidesName, psCourseDir = ".",
 ## ---- Clean up output from slide compilation -------------------------------------- ##
 #' Clean up output files from slide compilation
 #'
-cleanup_slidesdir <- function(psSlidesDir = ".", psFormatToKeep = c("rnw$", "cls$", "rpres$"), psNamesToKeep = c("ETH-BG")) {
+#' @description
+#' Cleaning up files and directories that are produced while compiling different
+#' types of rmarkdown sources
+#'
+#' @param psSlidesDir      root directory of document source files
+#' @param psFormatToKeep   file extensions of source files to be ignored by cleanup
+#' @param psNamesToKeep    explicit names of files or directories to be ignored by cleanup
+#' @export cleanup_slidesdir
+cleanup_slidesdir <- function(psSlidesDir = "vignettes",
+                              psFormatToKeep = c("rmd$", "rnw$", "cls$", "rpres$"),
+                              psNamesToKeep = c("ETH-BG","odg","png","tex")) {
   ### # get list of all files in slides directory
   vAllFiles <- list.files(path = psSlidesDir)
   ### # find index  of files that match a file extension pattern
