@@ -84,13 +84,14 @@ cleanup_slidesdir <- function(psSlidesDir = "vignettes",
   ### # ask user whether to delete files
   cat(" * Do you want to delete the following list of files:\n")
   print(vAllFiles[-c(vKeep)])
-  sAnswerUserQuestion <- readline(prompt = "Please answer [y/N]")
+  sAnswerUserQuestion <- readline(prompt = "Please answer [y/N]: ")
   if (identical(sAnswerUserQuestion, "y")) {
     ### # delete all files except those to be kept
     sapply(vAllFiles[-c(vKeep)], function(x) unlink(file.path(psSlidesDir, x), recursive = TRUE))
-    cat(" * files deleted\n")
+    print(vAllFiles[-c(vKeep)])
+    cat(" * ... deleted\n")
   } else {
-    cat(" * no files deleted\n")
+    cat(" * No files deleted\n")
   }
 
 }
