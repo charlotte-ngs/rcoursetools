@@ -1,0 +1,5 @@
+name: ETH Slides (PDF)
+description: >
+  Template for creating beamer slides for courses
+  with ETH title background.
+create_dir: false

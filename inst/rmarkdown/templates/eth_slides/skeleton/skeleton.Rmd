@@ -1,0 +1,94 @@
+%  Example for the ETH Beamer template
+%  Copyright 2014 by
+%  Dr. Antonios Garas,
+%  Chair of Systems Design, ETH Zurich
+%  Weinbergstrasse 56/58 CH-8092 Zurich
+%
+\pdfminorversion=4
+\documentclass[
+%aspectratio=169,
+first,
+%handout,
+%compress,
+%Helv,
+ETH3, %ETH1,
+navigation
+]{ETHbeamerclass}
+
+% Options for beamer:
+%
+% compress: navigation bar becomes smaller
+% t       : place contents of frames on top (alternative: b,c)
+% handout : handoutversion
+% notes   : show notes
+% notes=onlyslideswithnotes
+%
+\setbeamertemplate{note page}{\ \\[.3cm]
+\textbf{\color{colorSG}Notes:}\\%[0.1cm]
+{\footnotesize %\tiny
+\insertnote}}
+
+\setbeameroption{hide notes}
+%\setbeameroption{show notes}
+
+\setbeamertemplate{navigation symbols}{} % suppresses all navigation symbols:
+% \setbeamertemplate{navigation symbols}[horizontal] % Organizes the navigation symbols horizontally.
+% \setbeamertemplate{navigation symbols}[vertical] % Organizes the navigation symbols vertically.
+% \setbeamertemplate{navigation symbols}[only frame symbol] % Shows only the navigational symbol for navigating frames.
+
+\usepackage{amsmath, amssymb}
+\usepackage{pifont}
+\usepackage{multimedia}
+
+%--------------------------------------------------------------------------------------------------------
+%--- Some custom definitions...
+
+\definecolor{cbf}{RGB}{199,100,95}%{163,15,0}
+\newcommand{\cbf}{\color{cbf}}
+
+\newcommand{\mean}[1]{\left\langle #1 \right\rangle}
+\newcommand{\abs}[1]{\left| #1 \right|}
+
+%--------------------------------------------------------------------------------------------------------
+%--- Inputs for the title page...
+
+\title{Title}
+\newcommand{\shorttitle}{}
+
+\author{Author}
+\date{\today}
+\institute{Institution}
+
+\newcommand{\collaborators}{}
+\newcommand{\event}{Event}
+\newcommand{\place}{Place}
+
+
+%--------------------------------------------------------------------------------------------------------
+%--- Here begins the presentation...
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\frame{
+\maketitle
+}
+\note{}
+
+
+\section{Section}
+
+\frame{
+  \frametitle{Frametitle}
+  \begin{block}{Block}
+    Text inside block
+    \begin{itemize}
+    \item Item 1
+    \item Item 2
+    \end{itemize}
+  \end{block}
+
+}
+\note{}
+
+\end{document}
