@@ -57,7 +57,11 @@ create_slides <- function(psSlidesName, psCourseDir = ".",
 #'
 #' @description
 #' Cleaning up files and directories that are produced while compiling different
-#' types of rmarkdown sources
+#' types of rmarkdown sources.
+#'
+#' @details
+#' As a security feature, a question to the user is asked whether or not to delete
+#' the output files.
 #'
 #' @param psSlidesDir      root directory of document source files
 #' @param psFormatToKeep   file extensions of source files to be ignored by cleanup
@@ -77,7 +81,16 @@ cleanup_slidesdir <- function(psSlidesDir = "vignettes",
                                 function(psNamePat) grep(psNamePat, vAllFiles, fixed = TRUE),
                                 USE.NAMES = FALSE))
   vKeep <- union(vKeepFileIdx, vKeepNameIdx)
-  ### # delete all files except those to be kept
-  sapply(vAllFiles[-c(vKeep)], function(x) unlink(file.path(psSlidesDir, x), recursive = TRUE))
+  ### # ask user whether to delete files
+  cat(" * Do you want to delete the following list of files:\n")
+  print(vAllFiles[-c(vKeep)])
+  sAnswerUserQuestion <- readline(prompt = "Please answer [y/N]")
+  if (identical(sAnswerUserQuestion, "y")) {
+    ### # delete all files except those to be kept
+    sapply(vAllFiles[-c(vKeep)], function(x) unlink(file.path(psSlidesDir, x), recursive = TRUE))
+    cat(" * files deleted\n")
+  } else {
+    cat(" * no files deleted\n")
+  }
 
 }

@@ -16,6 +16,10 @@ cleanup_slidesdir(psSlidesDir = "vignettes", psFormatToKeep = c("rmd$",
 }
 \description{
 Cleaning up files and directories that are produced while compiling different
-types of rmarkdown sources
+types of rmarkdown sources.
+}
+\details{
+As a security feature, a question to the user is asked whether or not to delete
+the output files.
 }
 
