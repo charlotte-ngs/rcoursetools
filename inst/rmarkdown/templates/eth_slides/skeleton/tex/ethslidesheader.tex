@@ -1,0 +1,38 @@
+\setbeamertemplate{note page}{\ \\[.3cm]
+\textbf{\color{colorSG}Notes:}\\%[0.1cm]
+{\footnotesize %\tiny
+\insertnote}}
+
+\setbeameroption{hide notes}
+%\setbeameroption{show notes}
+
+\setbeamertemplate{navigation symbols}{} % suppresses all navigation symbols:
+% \setbeamertemplate{navigation symbols}[horizontal] % Organizes the navigation symbols horizontally.
+% \setbeamertemplate{navigation symbols}[vertical] % Organizes the navigation symbols vertically.
+% \setbeamertemplate{navigation symbols}[only frame symbol] % Shows only the navigational symbol for navigating frames.
+
+\usepackage{amsmath, amssymb}
+\usepackage{pifont}
+\usepackage{multimedia}
+
+%--------------------------------------------------------------------------------------------------------
+%--- Some custom definitions...
+
+\definecolor{cbf}{RGB}{199,100,95}%{163,15,0}
+\newcommand{\cbf}{\color{cbf}}
+
+\newcommand{\mean}[1]{\left\langle #1 \right\rangle}
+\newcommand{\abs}[1]{\left| #1 \right|}
+
+%--------------------------------------------------------------------------------------------------------
+%--- Inputs for the title page...
+
+\newcommand{\shorttitle}{}
+
+\institute{Institution}
+
+\newcommand{\collaborators}{}
+\newcommand{\event}{Event}
+\newcommand{\place}{Place}
+
+\setkeys{Gin}{width=1.1\paperwidth,height=1.1\textheight,keepaspectratio}

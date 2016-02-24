@@ -1,94 +1,47 @@
-%  Example for the ETH Beamer template
-%  Copyright 2014 by
-%  Dr. Antonios Garas,
-%  Chair of Systems Design, ETH Zurich
-%  Weinbergstrasse 56/58 CH-8092 Zurich
-%
-\pdfminorversion=4
-\documentclass[
-%aspectratio=169,
-first,
-%handout,
-%compress,
-%Helv,
-ETH3, %ETH1,
-navigation
-]{ETHbeamerclass}
+---
+title: "Untitled"
+author: "Peter von Rohr"
+date: "23 February 2016"
+output: 
+  beamer_presentation:
+    fig_crop: no
+    fig_height: 6
+    fig_width: 10
+    includes:
+      in_header: tex/ethslidesheader.tex
+    keep_tex: yes
+documentclass: ETHbeamerclass
+classoption: first,ETH3,navigation
+---
 
-% Options for beamer:
-%
-% compress: navigation bar becomes smaller
-% t       : place contents of frames on top (alternative: b,c)
-% handout : handoutversion
-% notes   : show notes
-% notes=onlyslideswithnotes
-%
-\setbeamertemplate{note page}{\ \\[.3cm]
-\textbf{\color{colorSG}Notes:}\\%[0.1cm]
-{\footnotesize %\tiny
-\insertnote}}
-
-\setbeameroption{hide notes}
-%\setbeameroption{show notes}
-
-\setbeamertemplate{navigation symbols}{} % suppresses all navigation symbols:
-% \setbeamertemplate{navigation symbols}[horizontal] % Organizes the navigation symbols horizontally.
-% \setbeamertemplate{navigation symbols}[vertical] % Organizes the navigation symbols vertically.
-% \setbeamertemplate{navigation symbols}[only frame symbol] % Shows only the navigational symbol for navigating frames.
-
-\usepackage{amsmath, amssymb}
-\usepackage{pifont}
-\usepackage{multimedia}
-
-%--------------------------------------------------------------------------------------------------------
-%--- Some custom definitions...
-
-\definecolor{cbf}{RGB}{199,100,95}%{163,15,0}
-\newcommand{\cbf}{\color{cbf}}
-
-\newcommand{\mean}[1]{\left\langle #1 \right\rangle}
-\newcommand{\abs}[1]{\left| #1 \right|}
-
-%--------------------------------------------------------------------------------------------------------
-%--- Inputs for the title page...
-
-\title{Title}
-\newcommand{\shorttitle}{}
-
-\author{Author}
-\date{\today}
-\institute{Institution}
-
-\newcommand{\collaborators}{}
-\newcommand{\event}{Event}
-\newcommand{\place}{Place}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
 
 
-%--------------------------------------------------------------------------------------------------------
-%--- Here begins the presentation...
+## R  Markdown
 
-\begin{document}
-\SweaveOpts{concordance=TRUE}
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-\frame{
-\maketitle
-}
-\note{}
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
 
+## Slide with Bullets
 
-\section{Section}
+- Bullet 1
+- Bullet 2
+- Bullet 3
 
-\frame{
-  \frametitle{Frametitle}
-  \begin{block}{Block}
-    Text inside block
-    \begin{itemize}
-    \item Item 1
-    \item Item 2
-    \end{itemize}
-  \end{block}
+## Slide with R Output
 
-}
-\note{}
+```{r cars, echo = TRUE}
+summary(cars)
+```
 
-\end{document}
+## Slide with Plot
+
+\setkeys{Gin}{width=0.9\paperwidth}
+
+```{r pressure}
+plot(pressure)
+```
+

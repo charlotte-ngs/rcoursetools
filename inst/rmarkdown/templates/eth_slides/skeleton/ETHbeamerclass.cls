@@ -1,5 +1,5 @@
 % `ETHbeamerclass.cls'
-%  Copyright 2014 by 
+%  Copyright 2014 by
 %  Dr. Antonios Garas,
 %  Chair of Systems Design, ETH Zurich
 %  Weinbergstrasse 56/58 CH-8092 Zurich
@@ -8,7 +8,7 @@
 % of the GNU Public License, version 2.
 %
 % This is a style file for creating LaTeX beamer presentations
-% in the ETH-wide corporate design. 
+% in the ETH-wide corporate design.
 %
 %--------------------------------------------------------------------
 
@@ -134,9 +134,9 @@
     \else%
       \vskip0.25cm%
       {\usebeamerfont{subtitle}\usebeamercolor[white]{subtitle}\insertsubtitle\par}%
-    \fi%  
+    \fi%
  \end{beamercolorbox}%
-  
+
 \setbeamertemplate{headline}
 {%
 \begin{beamercolorbox}{institute}
@@ -248,7 +248,7 @@
    \setbeamertemplate{block end}{
    \end{beamercolorbox}
 }
-  
+
 %%modify itemize
 \setbeamertemplate{itemize items}[square]
 \setbeamertemplate{enumerate items}[square]
@@ -258,7 +258,7 @@
 \setlength\leftmarginii  {0.4cm}
 \setlength\leftmarginiii  {0.4cm}
 \setlength  \labelsep  {0.5em}
-\setlength  \itemsep {1.5ex} 
+\setlength  \itemsep {1.5ex}
 \setlength  \labelwidth{\leftmargini}
 \addtolength\labelwidth{-\labelsep}
 
