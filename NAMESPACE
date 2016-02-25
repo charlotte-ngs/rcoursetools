@@ -2,4 +2,6 @@
 
 export(cleanup_slidesdir)
 export(create_course)
+export(create_diagram)
 export(create_slides)
+export(genericScaledPlot)
