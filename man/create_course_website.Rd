@@ -6,6 +6,13 @@
 \usage{
 create_course_website(psCourseName, psCourseDir = ".", psWsTemplate = NULL)
 }
+\arguments{
+\item{psCourseName}{Name of the course}
+
+\item{psCourseDir}{Course directory}
+
+\item{psWsTemplate}{Website template}
+}
 \description{
 Create a course website
 }

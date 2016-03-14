@@ -37,7 +37,7 @@ convertLibOToPdf <- function(psLibOFile, psLibODir = "odg", psFigOutDir = "."){
 #' @param  psOdgDir       directory where odg figure file is stored
 #' @param  psFigOutDir    directory where output should be placed
 #' @export insertOdgFigureAsPdf
-insertOdgFigureAsPdf <- function(psOdgFileStem, psOdgDir = "odg", psFigOutDir = ".") {
+insertOdgFigureAsPdf <- function(psOdgFileStem, psOdgDir = "odg", psFigOutDir = ".", pnPaperWidthScale = NULL) {
   ### # check that psOdgFileName exists
   sOdgFilename <- paste(psOdgFileStem, "odg", sep = ".")
   sOdgFile <- file.path(psOdgDir, sOdgFilename)
@@ -50,6 +50,9 @@ insertOdgFigureAsPdf <- function(psOdgFileStem, psOdgDir = "odg", psFigOutDir = 
   sPdfFile <- file.path(psFigOutDir,sPdfFilename)
   if (!file.exists(sPdfFile))
     stop("Cannot find pdf figure file: ", sPdfFile)
+  ### # in case a width scale was specified, use it
+  if (!is.null(pnPaperWidthScale))
+    genericScaledPlot(pnPaperWidthScale = pnPaperWidthScale)
   ### # output the command to include the figure
   cat("![", psOdgFileStem, "](", sPdfFile, ")\n", sep = "")
 }

@@ -6,36 +6,44 @@
 ###
 ### ######################################## ###
 
-#' Create an empty diagram
+#' Create an empty odg graphic
 #'
 #' @description
-#' \code{create_diagram} uses a templated for a given format
-#' that is expected to be stored in inst/extdata/templates
+#' \code{create_odg_graphic} uses the empty template skeleton.odg which
+#' is stored in the rmarkdown template directory of package \code{rcoursetools}.
+#' When calling  \code{create_odg_graphic} without any arguments, then the
+#' template is opened using soffice draw. When a filename for the odg graphic
+#' which should be created, is specified the template is renamed to the given
+#' name.
 #'
-#' @param psFormat   Format of diagram to be created
-#' @export create_diagram
-create_diagram <- function(psFormat = "odg"){
-  ### # get default settings for diagrams
-  lDiagramDefaults <- lGetDiagramDefaults()
+#' @param psGraphicName   Format of diagram to be created
+#' @export create_odg_graphic
+create_odg_graphic <- function(psGraphicName = NULL){
+  ### # use package template dir used by rmarkdown::draft
+  sTemplatePath <- system.file(package = "rcoursetools", "rmarkdown", "templates", "odg_figure", "skeleton")
   ### # determine full path and filename for diagram templates
-  sDiagramTemplate <- file.path(lDiagramDefaults$sTemplatePath, psFormat, paste("template", psFormat, sep = "."))
+  sGraphicTemplate <- file.path(sTemplatePath, paste("skeleton", psFormat, sep = "."))
   ### # template file must exist, otherwise we stop here
-  stopifnot(file.exists(sDiagramTemplate))
+  stopifnot(file.exists(sGraphicTemplate))
+  ### # in case a filename for the graphic is specified, we rename the templated
+  ### #  to the given name
+  if (!is.null(psGraphicName)) {
+    file.copy(from = sGraphicTemplate, to = psGraphicName)
+    sGraphicFile <-  psGraphicName
+  } else {
+    sGraphicFile <- sGraphicTemplate
+  }
   ### # depending on platform start open the template file differently
   if (.Platform$OS.type == "windows"){
-    file.show(sDiagramTemplate)
+    file.show(sGraphicFile)
   } else {
-    file.edit(sDiagramTemplate)
+    sSofficeCmd <- paste("soffice --draw", sGraphicFile)
+    system(sSofficeCmd)
   }
   ### # return nothing
   invisible()
 }
 
-#' Get a list with default settings related to diagrams
-lGetDiagramDefaults <- function(){
-  return(list(sTemplatePath = system.file(file.path("inst","extdata","templates"), package = "rcoursetools")
-              ))
-}
 
 #' Insert a plot into a document using a given width scale
 #'
@@ -57,4 +65,29 @@ genericScaledPlot <- function(pData = NULL, pnPaperWidthScale, pfPlotMethod = NU
   cat("\\setkeys{Gin}{width=", pnPaperWidthScale, "\\paperwidth}\n", sep = "")
   if (!is.null(pfPlotMethod))
     pfPlotMethod(pData, ...)
+}
+
+
+#' Open an existing odg graphics file
+#'
+#' @description
+#' Existing graphic files in odg format can be opened using
+#' \code{open_odg_graphic}. Depending on the OS platform
+#' different commands are used to open the graphic file which
+#' is specified by the parameter psOdgGraphicName
+#'
+#' @param psOdgGraphicName   Name of the odg graphic file
+#' @export open_odg_graphic
+open_odg_graphic <- function(psOdgGraphicName){
+  ### # depending on the platform type, use a different command
+  ### #  to open the file
+  if (.Platform$OS.type == "windows"){
+    file.show(psOdgGraphicName)
+  } else {
+    sSofficeCmd <- paste("soffice --draw", psOdgGraphicName)
+    system(sSofficeCmd)
+  }
+  ### # return nothing
+  invisible()
+
 }

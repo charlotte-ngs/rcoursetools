@@ -1,0 +1,5 @@
+name: Pdf Document (PDF)
+description: >
+  Template for package vignettes. This customises the basic pdf output
+  to take up as little space as possible.
+create_dir: false

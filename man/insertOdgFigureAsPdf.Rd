@@ -4,7 +4,8 @@
 \alias{insertOdgFigureAsPdf}
 \title{Inserts an odg draw figure into a rmarkdown text}
 \usage{
-insertOdgFigureAsPdf(psOdgFileStem, psOdgDir = "odg", psFigOutDir = ".")
+insertOdgFigureAsPdf(psOdgFileStem, psOdgDir = "odg", psFigOutDir = ".",
+  pnPaperWidthScale = NULL)
 }
 \arguments{
 \item{psOdgFileStem}{stem of odg figure file}
