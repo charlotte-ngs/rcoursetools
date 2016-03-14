@@ -6,7 +6,7 @@
 \usage{
 create_course_document(psDocuName, psPkgPath = ".",
   psRmdTemplate = "pdf_document", psTemplatePkg = "rcoursetools",
-  psDocuSubdir = "vignettes", pbEdit = FALSE)
+  psDocuSubdir = "vignettes", pbEdit = TRUE)
 }
 \arguments{
 \item{psDocuName}{name of the new document}

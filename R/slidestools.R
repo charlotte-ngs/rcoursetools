@@ -118,3 +118,57 @@ cleanup_slidesdir <- function(psSlidesDir = "vignettes",
   }
 
 }
+
+
+## ---- Create notes for a given deck of slides -------------------------------------- ##
+#' Create Notes document for a given deck of slides
+#'
+#' @description
+#' For a given Rmd source file containing a deck of
+#' slides, a new Rmd files is created. The new file
+#' contains all the slides from the source file with
+#' an extra slides inserted between each existing
+#' slide. The newly inserted slides all have the title
+#' Notes. These new slides can be used for notes
+#' used during the presentation. The file with the
+#' notes has the same name as the slide source file
+#' with the string "_Notes" added before the extension.
+#'
+#' @param psSlideSrcFile   Rmd source file with slides
+#' @param pbEditNotesFile   Flag indicating whether to open the notes file for edit
+#' @export create_notes
+create_notes <- function(psSlideSrcFile, pbEditNotesFile = TRUE){
+  ### # define the text for a notes slide
+  sNotesSlide <- "### Notes\n\n\n"
+  ### # check whether ending was given
+  if (length(grep("Rmd$", psSlideSrcFile)) > 0) {
+    sSlideSrc <- psSlideSrcFile
+  } else {
+    sSlideSrc <- paste(psSlideSrcFile, "Rmd", sep = ".")
+  }
+
+  ### # check whether source slide file exists
+  stopifnot(file.exists(sSlideSrc))
+  ### # read slides file and determine titles
+  conSlideFile <- file(description = sSlideSrc)
+  vecSlideText <- readLines(con = conSlideFile)
+  vecSlideTitles <- grep(pattern = "^###", vecSlideText)
+  vecSlideText[vecSlideTitles]
+  ### # add notes slide before each title
+  vecSlideText[vecSlideTitles] <- sapply(vecSlideText[vecSlideTitles],
+                                         function(x) paste0(sNotesSlide, x),
+                                         USE.NAMES = FALSE)
+  ### # add one more notes slide
+  vecSlideText <- c(vecSlideText, paste0("\n\n", sNotesSlide))
+  ### # write notes to file
+  sNoteFile <- gsub(".Rmd$", "_Notes.Rmd", sSlideSrc)
+  conNoteFile <- file(description = sNoteFile)
+  writeLines(vecSlideText, con = conNoteFile)
+  ### # close connections
+  close(conSlideFile)
+  close(conNoteFile)
+  ### # edit the notes file
+  if (pbEditNotesFile) file.edit(sNoteFile)
+
+  invisible(TRUE)
+}
