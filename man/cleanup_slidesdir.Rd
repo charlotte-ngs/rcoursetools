@@ -5,18 +5,22 @@
 \title{Clean up output files from slide compilation}
 \usage{
 cleanup_slidesdir(psSlidesDir = "vignettes", psFormatToKeep = c("rmd$",
-  "rnw$", "cls$", "rpres$"), psNamesToKeep = c("ETH-BG", "odg", "png", "tex"))
+  "rnw$", "cls$", "rpres$"), psDirsToKeep = c("ETH-BG", "odg", "png", "tex"))
 }
 \arguments{
 \item{psSlidesDir}{root directory of document source files}
 
 \item{psFormatToKeep}{file extensions of source files to be ignored by cleanup}
 
-\item{psNamesToKeep}{explicit names of files or directories to be ignored by cleanup}
+\item{psDirsToKeep}{explicit names of directories to be ignored by cleanup}
 }
 \description{
 Cleaning up files and directories that are produced while compiling different
-types of rmarkdown sources.
+types of rmarkdown sources. If certain files should be ignored by the cleanup
+function, then their extension can be specified as a component of the vector
+passed as function parameter psFormatToKeep. If directories should be kept,
+then their name can be specified as a component of the parameter vector
+psDirsToKeep.
 }
 \details{
 As a security feature, a question to the user is asked whether or not to delete

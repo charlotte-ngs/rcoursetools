@@ -80,7 +80,11 @@ create_slides <- function(psSlidesName, psCourseDir = ".",
 #'
 #' @description
 #' Cleaning up files and directories that are produced while compiling different
-#' types of rmarkdown sources.
+#' types of rmarkdown sources. If certain files should be ignored by the cleanup
+#' function, then their extension can be specified as a component of the vector
+#' passed as function parameter psFormatToKeep. If directories should be kept,
+#' then their name can be specified as a component of the parameter vector
+#' psDirsToKeep.
 #'
 #' @details
 #' As a security feature, a question to the user is asked whether or not to delete
@@ -88,29 +92,30 @@ create_slides <- function(psSlidesName, psCourseDir = ".",
 #'
 #' @param psSlidesDir      root directory of document source files
 #' @param psFormatToKeep   file extensions of source files to be ignored by cleanup
-#' @param psNamesToKeep    explicit names of files or directories to be ignored by cleanup
+#' @param psDirsToKeep     explicit names of directories to be ignored by cleanup
 #' @export cleanup_slidesdir
 cleanup_slidesdir <- function(psSlidesDir = "vignettes",
                               psFormatToKeep = c("rmd$", "rnw$", "cls$", "rpres$"),
-                              psNamesToKeep = c("ETH-BG","odg","png","tex")) {
+                              psDirsToKeep = c("ETH-BG","odg","png","tex")) {
   ### # get list of all files in slides directory
-  vAllFiles <- list.files(path = psSlidesDir)
+  vAllFiles <- list.files(path = psSlidesDir, full.names = TRUE)
   ### # find index  of files that match a file extension pattern
   vKeepFileIdx <- unlist(sapply(psFormatToKeep,
                                 function(psPat) grep(pattern = psPat, vAllFiles, ignore.case = TRUE),
                                 USE.NAMES = FALSE))
   ### # find files that match a fixed name
-  vKeepNameIdx <- unlist(sapply(psNamesToKeep,
+  vKeepDirIdx <- unlist(sapply(psDirsToKeep,
                                 function(psNamePat) grep(psNamePat, vAllFiles, fixed = TRUE),
                                 USE.NAMES = FALSE))
-  vKeep <- union(vKeepFileIdx, vKeepNameIdx)
+  vKeepDirIdx <- vKeepDirIdx[dir.exists(vAllFiles[vKeepDirIdx])]
+  vKeep <- union(vKeepFileIdx, vKeepDirIdx)
   ### # ask user whether to delete files
   cat(" * Do you want to delete the following list of files:\n")
   print(vAllFiles[-c(vKeep)])
   sAnswerUserQuestion <- readline(prompt = "Please answer [y/N]: ")
   if (identical(sAnswerUserQuestion, "y")) {
     ### # delete all files except those to be kept
-    sapply(vAllFiles[-c(vKeep)], function(x) unlink(file.path(psSlidesDir, x), recursive = TRUE))
+    sapply(vAllFiles[-c(vKeep)], function(x) unlink(x, recursive = TRUE))
     print(vAllFiles[-c(vKeep)])
     cat(" * ... deleted\n")
   } else {
@@ -134,12 +139,19 @@ cleanup_slidesdir <- function(psSlidesDir = "vignettes",
 #' notes has the same name as the slide source file
 #' with the string "_Notes" added before the extension.
 #'
-#' @param psSlideSrcFile   Rmd source file with slides
-#' @param pbEditNotesFile   Flag indicating whether to open the notes file for edit
-#' @export create_notes
-create_notes <- function(psSlideSrcFile, pbEditNotesFile = TRUE){
+#' @details
+#' Because not in all Rmd source files slide titles
+#' are indicated with the same number of hashes (#),
+#' we give the pattern that denotes a slide title as
+#' additional function parameter psSlideTitlePattern.
+#'
+#' @param psSlideSrcFile        Rmd source file with slides
+#' @param psSlideTitlePattern   pattern denoting a slide title
+#' @param pbEditNotesFile       Flag indicating whether to open the notes file for edit
+#' @export create_slides_notes
+create_slides_notes <- function(psSlideSrcFile, psSlideTitlePattern = "###", pbEditNotesFile = TRUE){
   ### # define the text for a notes slide
-  sNotesSlide <- "### Notes\n\n\n"
+  sNotesSlide <- paste(psSlideTitlePattern, " Notes\n\n\n")
   ### # check whether ending was given
   if (length(grep("Rmd$", psSlideSrcFile)) > 0) {
     sSlideSrc <- psSlideSrcFile
@@ -152,7 +164,7 @@ create_notes <- function(psSlideSrcFile, pbEditNotesFile = TRUE){
   ### # read slides file and determine titles
   conSlideFile <- file(description = sSlideSrc)
   vecSlideText <- readLines(con = conSlideFile)
-  vecSlideTitles <- grep(pattern = "^###", vecSlideText)
+  vecSlideTitles <- grep(pattern = paste0("^", psSlideTitlePattern), vecSlideText)
   vecSlideText[vecSlideTitles]
   ### # add notes slide before each title
   vecSlideText[vecSlideTitles] <- sapply(vecSlideText[vecSlideTitles],
@@ -170,5 +182,43 @@ create_notes <- function(psSlideSrcFile, pbEditNotesFile = TRUE){
   ### # edit the notes file
   if (pbEditNotesFile) file.edit(sNoteFile)
 
+  invisible(TRUE)
+}
+
+
+#' Clean up notes source files
+#'
+#' @description
+#' This function \code{cleanup_source_notes()} is to be used with caution,
+#' because it will delete any Rmd source file of slide notes. It is created
+#' for convenience in the testing phase with notes. Once slide notes with
+#' meaningful content are created, it should not be used anymore.
+#'
+#' @param psNotesPattern   pattern of notes file to be deleted
+#' @param psSubDir         subdirectory where notes file is
+#' @param psNotesSrcFile   explicit name of notes file
+#' @export cleanup_source_notes
+cleanup_source_notes <- function(psNotesPattern = "_Notes.Rmd$", psSubDir = "vignettes", psNotesSrcFile = NULL){
+  ### # in case a single notes source file is specified, then only delete that one
+  if (!is.null(psNotesSrcFile)) {
+    cat(" * Do you want to delete the following file: ", psNotesSrcFile, "\n")
+    sAnswerUserQuestion <- readline(prompt = "Please answer [y/N]: ")
+    if (identical(sAnswerUserQuestion, "y")) {
+      file.remove(psNotesSrcFile)
+    } else {
+      cat(" * No files deleted\n")
+    }
+  } else {
+    ### # files matching pattern
+    sDelFiles <- list.files(path = psSubDir, pattern = psNotesPattern, full.names = TRUE)
+    cat(" * Do you want to delete the following files:\n")
+    print(sDelFiles)
+    sAnswerUserQuestion <- readline(prompt = "Please answer [y/N]: ")
+    if (identical(sAnswerUserQuestion, "y")) {
+      file.remove(sDelFiles)
+    } else {
+      cat(" * No files deleted\n")
+    }
+  }
   invisible(TRUE)
 }
