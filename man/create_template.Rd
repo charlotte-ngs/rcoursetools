@@ -13,7 +13,7 @@ create_template(psTemplateName, psPkgDir = ".")
 }
 \description{
 The function \code{rmarkdown::draft()} uses a defined
-directory structure under "inst/rmarkdown/templates" to
+directory structure under "rmarkdown/templates" to
 instantiate new documents. This function \code{create_template()}
 creates a new skeleton infrastructure for a new template.
 }
