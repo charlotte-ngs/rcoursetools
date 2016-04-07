@@ -33,7 +33,7 @@ R6GenericTable <- R6::R6Class(classname = "R6GenericTable",
                               public = list(
                                 initialize = function(){
                                   'Initialisation of table with empty body.'
-                                  private$sTableHeader <- ""
+                                  private$sTableHeader <- NULL
                                   private$lTableBody <- list()
                                 },
                                 setTableHeader = function(psTableHeader){
@@ -52,9 +52,9 @@ R6GenericTable <- R6::R6Class(classname = "R6GenericTable",
                                   not added to the table body.
                                   '
                                   if (length(private$lTableBody) == 0L){
-                                    private$lTableBody <<- plTableRow
+                                    private$lTableBody <- plTableRow
                                   } else {
-                                    sTableBodyNames <- names(lTableBody)
+                                    sTableBodyNames <- names(private$lTableBody)
                                     sTableRowNames <- names(plTableRow)
                                     if (any(sTableBodyNames != sTableRowNames)){
                                       cat(" * Error cannot add current row to table due to name missmatches")
@@ -73,6 +73,8 @@ R6GenericTable <- R6::R6Class(classname = "R6GenericTable",
                                 },
                                 to_data_frame  = function(){
                                   dfTable <- as.data.frame(private$lTableBody, stringsAsFactors = FALSE)
+                                  if (is.null(private$sTableHeader))
+                                    private$sTableHeader <- names(private$lTableBody)
                                   ### # in case length of sTableHeader and number of columns match
                                   ### #  use them as column names
                                   if (identical(length(private$sTableHeader), ncol(dfTable)))
@@ -135,7 +137,7 @@ R6DocuStatus <- R6::R6Class(classname = "R6DocuStatus",
                             public = list(
                               initialize = function(){
                                 'Initialisation of a document status table'
-                                private$sTableHeader <- c("Version",
+                                private$sTableHeaderOutput <- c("Version",
                                                           "Datum",
                                                           "Wer",
                                                           "Änderung")
@@ -167,8 +169,29 @@ R6DocuStatus <- R6::R6Class(classname = "R6DocuStatus",
                                   write.csv(dfTable, file = private$sStatusFile,
                                             quote = FALSE, row.names = FALSE)
                                 }
+                              },
+                              readStatusFile = function(psFile = NULL){
+                                'read status info file which is either given
+                                 in the object or supplied as an argument to
+                                 this method. If the file cannot be found then
+                                 an error is generated.'
+                                if (is.null(private$sStatusFile)){
+                                  if (is.null(psFile))
+                                    stop("No file to write current status to, specified")
+                                  sFile <- psFile
+                                } else {
+                                  sFile <- private$sStatusFile
+                                }
+                                ### # check whether file is found
+                                if (!file.exists(sFile))
+                                  stop("Status file: ", sFile, " cannot be found")
+                                dfTable <- read.csv(file = sFile, stringsAsFactors = FALSE)
+                                ### # convert data-frame to list
+                                private$lTableBody <- as.list(dfTable)
+                                private$sTableHeader <- names(private$lTableBody)
                               }
                             ),
                             private = list(
-                              sStatusFile = "character"
+                              sStatusFile = "character",
+                              sTableHeaderOutput = "character"
                             ))
