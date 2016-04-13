@@ -67,7 +67,7 @@ create_course_document <- function(psDocuName,
   devtools:::add_desc_package(pkg, "Suggests", "knitr")
   devtools:::add_desc_package(pkg, "Suggests", "rmarkdown")
   devtools:::add_desc_package(pkg, "VignetteBuilder", "knitr")
-  dir.create(file.path(pkg$path, psDocuSubdir), showWarnings = FALSE)
+  dir.create(file.path(pkg$path, psDocuSubdir), showWarnings = FALSE, recursive = TRUE)
   sDocuPath <- file.path(pkg$path, psDocuSubdir, paste0(psDocuName, ".Rmd"))
   rmarkdown::draft(file = sDocuPath,
                    template = psRmdTemplate,
