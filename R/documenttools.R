@@ -77,3 +77,52 @@ create_course_document <- function(psDocuName,
   if (pbEdit) file.edit(sDocuPath)
   message("Draft vignette created in ", sDocuPath)
 }
+
+
+#' Create a document from a template
+#'
+#' @description
+#' The function \code{create_rmd_document} copies a template document
+#' from any given package to the path that is specified using
+#' the name that is given with parameter \code{psDocuName}.
+#'
+#' @details
+#' The format of the created document is assumed to be Rmarkdown.
+#' The extension .Rmd will be added to the given document name.
+#' This function does not make any assumption about the environment
+#' in which the new document is created. Hence this function can
+#' be used outside of R-Packages or RStudio-projects.
+#'
+#' @param   psDocuName           name of the new document without extension
+#' @param   psDocuPath           path where document should be created
+#' @param   psRmdTemplate        name of the template to be used
+#' @param   psTemplatePkg        package from where the template should be taken
+#' @param   pbCreateDocuSubdir   separate subdirectory for document psDocuName
+#' @param   pbEdit               directly open newly created document
+#' @export  create_rmd_document
+create_rmd_document <- function(psDocuName,
+                            psDocuPath         =  ".",
+                            psRmdTemplate       =  "pdf_document",
+                            psTemplatePkg       =  "rcoursetools",
+                            pbCreateDocuSubdir  =  TRUE,
+                            pbEdit              =  TRUE) {
+  ### # initialize the document path to the function parameter psDocuPath
+  sDocuPath <- psDocuPath
+  ### # in case a separate subdirectory for the document is required, add
+  ### #  document name to the document path
+  if (pbCreateDocuSubdir)
+    sDocuPath <- file.path(sDocuPath, psDocuName)
+  ### # in case the document path does not exist, create it
+  if (!dir.exists(sDocuPath))
+    dir.create(sDocuPath, showWarnings = FALSE, recursive = TRUE)
+  ### # set the document name including the path
+  sDocuName <- file.path(sDocuPath, paste(psDocuName, "Rmd", sep = "."))
+  rmarkdown::draft(file = sDocuName,
+                   template = psRmdTemplate,
+                   package = psTemplatePkg,
+                   create_dir = FALSE,
+                   edit = FALSE)
+  if (pbEdit) file.edit(sDocuName)
+  message("Draft vignette created in ", sDocuName)
+}
+
