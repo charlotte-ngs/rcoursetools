@@ -35,12 +35,16 @@
 #' @param psCourseDir        course directory
 #' @param psSlidesSubdir     subdirectory for current slides
 #' @param psSlidesTemplate   template for slides which should be used
+#' @param psTemplatePackage  package from where templates should be copied from
 #' @param psSlidesFormat     extension of final slides file name
+#' @param pbOverwrite        whether or not existing slide source files should be overwritten
 #' @export create_slides
 create_slides <- function(psSlidesName, psCourseDir = ".",
-                          psSlidesSubdir = NULL,
-                          psSlidesTemplate = "beamer_slides",
-                          psSlidesFormat   = "Rmd"){
+                          psSlidesSubdir    = NULL,
+                          psSlidesTemplate  = "beamer_slides",
+                          psTemplatePackage = "rcoursetools",
+                          psSlidesFormat    = "Rmd",
+                          pbOverwrite       = FALSE){
   ### # doing a setup similar to devtools::use_vignette
   pkg <- devtools::as.package(psCourseDir)
   devtools:::add_desc_package(pkg, "Suggests", "knitr")
@@ -58,12 +62,12 @@ create_slides <- function(psSlidesName, psCourseDir = ".",
     dir.create(sSlidesDir, recursive = TRUE, showWarnings = FALSE)
   ### # depending on psSlidesFormat, put different extensions to final file
   sSlidesPath <- file.path(sSlidesDir, paste(psSlidesName, "Rmd", sep = "."))
-  ### # use rmarkdown draft function to copy over the draft file
-  rmarkdown::draft(file = sSlidesPath,
-                   template = psSlidesTemplate,
-                   package = "rcoursetools",
-                   create_dir = FALSE,
-                   edit = FALSE)
+  ### # use local version of rmarkdown draft function to copy over the draft file
+  rmd_draft(file = sSlidesPath,
+            template = psSlidesTemplate,
+            package = psTemplatePackage,
+            create_dir = FALSE,
+            pbOverwrite = pbOverwrite)
   sFinalSlideName <- sSlidesPath
   ### # allow for legacy Rnw based templates
   if (psSlidesFormat == "Rnw"){
@@ -72,6 +76,79 @@ create_slides <- function(psSlidesName, psCourseDir = ".",
   }
 
   message("Slides draft created in: ", sFinalSlideName)
+}
+
+
+#' Custom local copy of rmarkdown::draft
+#'
+#' @description
+#' \code{rmd_draft} corresponds to a local copy of
+#' \code{rmarkdown::draft}. In contrast to the original
+#' version, this version allows for the use of templates
+#' with skeleton files which are already found in the
+#' target directory.
+#'
+#'
+#' @param file          name of the new document
+#' @param template      name of the template
+#' @param package       package where template can be found
+#' @param create_dir    whether or not to create a new directory for this document
+#' @param pbOverwrite   should existing files be overwritten
+rmd_draft <- function(file, template,
+                      package = NULL,
+                      create_dir = "default",
+                      pbOverwrite = FALSE){
+  ### # determine the template path which is contained
+  ### #  in package "package"
+  if (!is.null(package)) {
+    template_path = system.file("rmarkdown", "templates",
+                                template, package = package)
+    if (!nzchar(template_path)) {
+      stop("The template '", template, "' was not found in the ",
+           package, " package")
+    }
+  } else {
+    template_path <- template
+  }
+  ### # read info in template.yaml
+  template_yaml <- file.path(template_path, "template.yaml")
+  if (!file.exists(template_yaml)) {
+    stop("No template.yaml file found for template '", template,
+         "'")
+  }
+  template_meta <- rmarkdown:::yaml_load_file_utf8(template_yaml)
+  if (is.null(template_meta$name) || is.null(template_meta$description)) {
+    stop("template.yaml must contain name and description fields")
+  }
+  if (identical(create_dir, "default"))
+    create_dir <- isTRUE(template_meta$create_dir)
+  if (create_dir) {
+    file <- tools::file_path_sans_ext(file)
+    if (dir_exists(file))
+      stop("The directory '", file, "' already exists.")
+    dir.create(file)
+    file <- file.path(file, basename(file))
+  }
+  ### # error, in case file itself already exists
+  if (!identical(tolower(tools::file_ext(file)), "rmd"))
+    file <- paste(file, ".Rmd", sep = "")
+  if (file.exists(file))
+    stop("The file '", file, "' already exists.")
+  ### # generate a list of skeleton files
+  skeleton_files <- list.files(file.path(template_path, "skeleton"),
+                               full.names = TRUE)
+  to <- dirname(file)
+  for (f in skeleton_files) {
+    if (pbOverwrite)
+      file.copy(from = f, to = to, overwrite = pbOverwrite, recursive = TRUE)
+    if (!file.exists(file.path(to, basename(f))))
+      # stop("The file '", basename(f), "' already exists")
+      file.copy(from = f, to = to, overwrite = FALSE, recursive = TRUE)
+  }
+  file.rename(file.path(dirname(file), "skeleton.Rmd"), file)
+
+  invisible(file)
+
 }
 
 
@@ -96,7 +173,7 @@ create_slides <- function(psSlidesName, psCourseDir = ".",
 #' @export cleanup_slidesdir
 cleanup_slidesdir <- function(psSlidesDir = "vignettes",
                               psFormatToKeep = c("rmd$", "rnw$", "cls$", "rpres$"),
-                              psDirsToKeep = c("ETH-BG","odg","png","tex")) {
+                              psDirsToKeep = c("ETH-BG","odg","png","tex", "pdf")) {
   ### # get list of all files in slides directory
   vAllFiles <- list.files(path = psSlidesDir, full.names = TRUE)
   ### # find index  of files that match a file extension pattern

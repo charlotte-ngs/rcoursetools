@@ -6,7 +6,7 @@
 \usage{
 create_course_document(psDocuName, psPkgPath = ".",
   psRmdTemplate = "pdf_document", psTemplatePkg = "rcoursetools",
-  psDocuSubdir = "vignettes", pbEdit = TRUE)
+  psDocuSubdir = "vignettes", pbCreateSubdir = TRUE, pbEdit = TRUE)
 }
 \arguments{
 \item{psDocuName}{name of the new document}
@@ -18,6 +18,8 @@ create_course_document(psDocuName, psPkgPath = ".",
 \item{psTemplatePkg}{package from where the template should be taken}
 
 \item{psDocuSubdir}{subdirectory in which document should be saved to}
+
+\item{pbCreateSubdir}{should new document be put in a separate subdirectory}
 
 \item{pbEdit}{directly open newly created document}
 }

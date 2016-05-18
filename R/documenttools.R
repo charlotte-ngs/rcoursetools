@@ -48,27 +48,34 @@ create_course_website <- function(psCourseName, psCourseDir = ".", psWsTemplate 
 #' More information about setting up custom templates is obtained
 #' in the helpfile of rmarkdown::draft.
 #'
-#' @param   psDocuName   name of the new document
-#' @param   psPkgPath    path where package is located under which document should be created
-#' @param   psRmdTemplate   name of the template to be used
-#' @param   psTemplatePkg   package from where the template should be taken
-#' @param   psDocuSubdir    subdirectory in which document should be saved to
-#' @param   pbEdit          directly open newly created document
+#' @param   psDocuName       name of the new document
+#' @param   psPkgPath        path where package is located under which document should be created
+#' @param   psRmdTemplate    name of the template to be used
+#' @param   psTemplatePkg    package from where the template should be taken
+#' @param   psDocuSubdir     subdirectory in which document should be saved to
+#' @param   pbCreateSubdir   should new document be put in a separate subdirectory
+#' @param   pbEdit           directly open newly created document
 #' @export create_course_document
 create_course_document <- function(psDocuName,
-                                   psPkgPath     = ".",
-                                   psRmdTemplate = "pdf_document",
-                                   psTemplatePkg = "rcoursetools",
-                                   psDocuSubdir  = "vignettes",
-                                   pbEdit        = TRUE) {
+                                   psPkgPath      = ".",
+                                   psRmdTemplate  = "pdf_document",
+                                   psTemplatePkg  = "rcoursetools",
+                                   psDocuSubdir   = "vignettes",
+                                   pbCreateSubdir = TRUE,
+                                   pbEdit         = TRUE) {
   ### # do the preparation similar to devtools::use_vignette
   pkg <- devtools::as.package(psPkgPath)
   devtools:::check_suggested("rmarkdown")
   devtools:::add_desc_package(pkg, "Suggests", "knitr")
   devtools:::add_desc_package(pkg, "Suggests", "rmarkdown")
   devtools:::add_desc_package(pkg, "VignetteBuilder", "knitr")
-  dir.create(file.path(pkg$path, psDocuSubdir), showWarnings = FALSE, recursive = TRUE)
-  sDocuPath <- file.path(pkg$path, psDocuSubdir, paste0(psDocuName, ".Rmd"))
+  if (pbCreateSubdir){
+    sDocuSubdir <- file.path(pkg$path, psDocuSubdir, psDocuName)
+  } else {
+    sDocuSubdir <- file.path(pkg$path, psDocuSubdir)
+  }
+  dir.create(sDocuSubdir, showWarnings = FALSE, recursive = TRUE)
+  sDocuPath <- file.path(sDocuSubdir, paste0(psDocuName, ".Rmd"))
   rmarkdown::draft(file = sDocuPath,
                    template = psRmdTemplate,
                    package = psTemplatePkg,

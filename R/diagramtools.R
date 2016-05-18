@@ -22,7 +22,7 @@ create_odg_graphic <- function(psGraphicName = NULL){
   ### # use package template dir used by rmarkdown::draft
   sTemplatePath <- system.file(package = "rcoursetools", "rmarkdown", "templates", "odg_figure", "skeleton")
   ### # determine full path and filename for diagram templates
-  sGraphicTemplate <- file.path(sTemplatePath, paste("skeleton", psFormat, sep = "."))
+  sGraphicTemplate <- file.path(sTemplatePath, "skeleton.odg")
   ### # template file must exist, otherwise we stop here
   stopifnot(file.exists(sGraphicTemplate))
   ### # in case a filename for the graphic is specified, we rename the templated

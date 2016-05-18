@@ -5,7 +5,8 @@
 \title{Create a deck of slides}
 \usage{
 create_slides(psSlidesName, psCourseDir = ".", psSlidesSubdir = NULL,
-  psSlidesTemplate = "beamer_slides", psSlidesFormat = "Rmd")
+  psSlidesTemplate = "beamer_slides", psTemplatePackage = "rcoursetools",
+  psSlidesFormat = "Rmd", pbOverwrite = FALSE)
 }
 \arguments{
 \item{psSlidesName}{name of slides source file}
@@ -16,7 +17,11 @@ create_slides(psSlidesName, psCourseDir = ".", psSlidesSubdir = NULL,
 
 \item{psSlidesTemplate}{template for slides which should be used}
 
+\item{psTemplatePackage}{package from where templates should be copied from}
+
 \item{psSlidesFormat}{extension of final slides file name}
+
+\item{pbOverwrite}{whether or not existing slide source files should be overwritten}
 }
 \description{
 This is a wrapper function to \code{rmarkdown::draft} that

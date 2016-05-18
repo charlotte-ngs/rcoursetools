@@ -5,7 +5,8 @@
 \title{Clean up output files from slide compilation}
 \usage{
 cleanup_slidesdir(psSlidesDir = "vignettes", psFormatToKeep = c("rmd$",
-  "rnw$", "cls$", "rpres$"), psDirsToKeep = c("ETH-BG", "odg", "png", "tex"))
+  "rnw$", "cls$", "rpres$"), psDirsToKeep = c("ETH-BG", "odg", "png", "tex",
+  "pdf"))
 }
 \arguments{
 \item{psSlidesDir}{root directory of document source files}
